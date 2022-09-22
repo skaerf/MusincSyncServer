@@ -1,37 +1,52 @@
 import com.sun.net.httpserver.HttpServer;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.Inet4Address;
-import java.net.InetSocketAddress;
-import java.net.URLDecoder;
+import java.io.*;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Scanner;
 
 public class Main {
 
-    HashMap<String, String> configValues = new HashMap<>();
+    static HashMap<String, String> configValues = new HashMap<>();
+    static File configFile;
     static String localIP;
     static HttpServer server;
     static int port;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SocketException, FileNotFoundException {
         System.out.println("Initialising MusincSyncServer");
+        System.out.println(NetworkInterface.getNetworkInterfaces());
         port = 1905;
-        File configFile = new File("config.txt");
+        configFile = new File("config.txt");
         if (!configFile.exists()) {
             try {
-                configFile.createNewFile();
+                if (configFile.createNewFile()) {
+                    System.out.println("Config file successfully created");
+                }
             }
             catch (IOException e) {
                 System.out.println("Could not create config file, please allow access for file creation");
-                // kill process?
+                // TODO kill process?
             }
         }
         else {
-            // READ HASHMAP FILE INTO MEMORY - YOUVE DONE THIS BEFORE, DONT BE STUPID
+            BufferedReader br = new BufferedReader(new FileReader(configFile));
+            try {
+                String line = br.readLine();
+                while (line != null) {
+                    String key = line.split(":")[0];
+                    String value = line.split(":")[1];
+                    configValues.put(key,value);
+                    line = br.readLine();
+                }
+                System.out.println("Config info successfully loaded");
+            }
+            catch (IOException e) {
+                System.out.println("Config info could not be loaded in");
+            }
+
         }
         initialiseServer(port);
     }
@@ -44,10 +59,11 @@ public class Main {
             server.setExecutor(null);
             server.start();
             localIP = Inet4Address.getLocalHost().getHostAddress();
-            System.out.println("http://"+Inet4Address.getLocalHost().getHostAddress()+":"+port);
+
+            System.out.println("http://"+localIP+":"+port);
         }
         catch (IOException e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
 
     }
@@ -76,7 +92,7 @@ public class Main {
                         values.add(value);
 
                     } else if (obj instanceof String) {
-                        List<String> values = new ArrayList<String>();
+                        List<String> values = new ArrayList<>();
                         values.add((String) obj);
                         values.add(value);
                         parameters.put(key, values);
