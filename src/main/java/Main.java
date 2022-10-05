@@ -5,7 +5,6 @@ import java.net.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Scanner;
 
 public class Main {
 
@@ -15,9 +14,9 @@ public class Main {
     static HttpServer server;
     static int port;
 
-    public static void main(String[] args) throws SocketException, FileNotFoundException {
+    public static void main(String[] args) throws FileNotFoundException {
         System.out.println("Initialising MusincSyncServer");
-        System.out.println(NetworkInterface.getNetworkInterfaces());
+        MySQLInterface.connectDatabase();
         port = 1905;
         configFile = new File("config.txt");
         if (!configFile.exists()) {
@@ -59,7 +58,6 @@ public class Main {
             server.setExecutor(null);
             server.start();
             localIP = Inet4Address.getLocalHost().getHostAddress();
-
             System.out.println("http://"+localIP+":"+port);
         }
         catch (IOException e) {
