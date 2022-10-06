@@ -24,5 +24,17 @@ public class MySQLInterface {
         }
         return true;
     }
+
+    public static String getUsername(String username) {
+        ResultSet resSet;
+        try {
+            resSet = statement.executeQuery("select * from users where username = {0}".replace("{0}", username));
+        }
+        catch (SQLException e) {
+            System.out.println("Username request could not be processed by MySQL");
+            return null;
+        }
+        return null;
+    }
 }
 //ass
