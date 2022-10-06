@@ -1,4 +1,5 @@
 import java.sql.*;
+import java.util.HashMap;
 
 public class MySQLInterface {
 
@@ -25,16 +26,32 @@ public class MySQLInterface {
         return true;
     }
 
-    public static String getUsername(String username) {
+    public static HashMap<String, String> getUser(String username) {
         ResultSet resSet;
+        HashMap<String, String> userInfo = new HashMap<>();
         try {
-            resSet = statement.executeQuery("select * from users where username = {0}".replace("{0}", username));
+            resSet = statement.executeQuery("select * from users where username = '{0}'".replace("{0}", username));
         }
         catch (SQLException e) {
             System.out.println("Username request could not be processed by MySQL");
             return null;
         }
-        return null;
+        if (resSet != null) {
+            try {
+                while (resSet.next()) {
+                    for (int i = 1; i <= resSet.getMetaData().getColumnCount(); i++) {
+                        if (i > 1) System.out.print(",  ");
+                        String columnValue = resSet.getString(i);
+                        userInfo.put(resSet.getMetaData().getColumnName(i), columnValue);
+                    }
+                }
+            }
+            catch (SQLException e) {
+                e.printStackTrace();
+                System.out.println("System could not iterate through MySQL response");
+            }
+        }
+        return userInfo;
     }
 }
 //ass
