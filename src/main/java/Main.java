@@ -17,7 +17,6 @@ public class Main {
     public static void main(String[] args) throws FileNotFoundException {
         System.out.println("Initialising MusincSyncServer");
         MySQLInterface.connectDatabase();
-        port = 1905;
         configFile = new File("config.txt");
         if (!configFile.exists()) {
             try {
@@ -27,7 +26,7 @@ public class Main {
             }
             catch (IOException e) {
                 System.out.println("Could not create config file, please allow access for file creation");
-                // TODO kill process?
+                System.exit(0);
             }
         }
         else {
@@ -47,6 +46,7 @@ public class Main {
             }
 
         }
+        port = Integer.parseInt(configValues.get("port"));
         initialiseServer(port);
     }
 
