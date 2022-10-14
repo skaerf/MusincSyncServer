@@ -1,3 +1,5 @@
+import java.net.Inet4Address;
+import java.net.UnknownHostException;
 import java.sql.*;
 import java.util.HashMap;
 
@@ -6,6 +8,7 @@ public class MySQLInterface {
     private static String username = "serverTest";
     private static String password = "muchTestMoment";
     private static Statement statement;
+    private static Connection connection; //.createStatement()
 
     public static boolean connectDatabase() {
         try {
@@ -15,11 +18,16 @@ public class MySQLInterface {
             e.printStackTrace();
         }
         try {
-            Connection connection = DriverManager.getConnection("jdbc:mysql://home.skaerf.xyz:2291/usrs", username, password);
-            statement = connection.createStatement();
-            System.out.println("Successfully connected to database");
-            //ResultSet resultSet = statement.executeQuery("select * from *");
-        } catch (SQLException e) {
+            if (!Inet4Address.getLocalHost().getHostAddress().equalsIgnoreCase("192.168.56.1")) {
+                connection = DriverManager.getConnection("jdbc:mysql://home.skaerf.xyz:2291/usrs", username, password);
+                System.out.println("Successfully connected to database");
+                //ResultSet resultSet = statement.executeQuery("select * from *");
+            }
+            else {
+                System.out.println("Not going to attempt a connection to database due to MySQL access being blocked by institution network");
+                System.out.println("Notice some features will be unavailable and/or fire errors due to this");
+            }
+        } catch (SQLException | UnknownHostException e) {
             e.printStackTrace();
             return false;
         }
@@ -52,6 +60,17 @@ public class MySQLInterface {
             }
         }
         return userInfo;
+    }
+
+    public static ResultSet executeStatement(String sqlString) {
+        ResultSet resSet;
+        try {
+            resSet = statement.executeQuery(sqlString);
+            return resSet;
+        }
+        catch (SQLException e) {
+            return null;
+        }
     }
 }
 //ass
