@@ -10,7 +10,11 @@ public class Account {
 
 
     public Account(String username, String email, String firstname, String surname, ArrayList<String> knownIPs) {
-
+        this.username = username;
+        this.email = email;
+        this.firstname = firstname;
+        this.surname = surname;
+        this.knownIPs = knownIPs;
     }
 
     public String getUsername() {
