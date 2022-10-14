@@ -3,6 +3,7 @@ import com.sun.net.httpserver.HttpServer;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -53,7 +54,7 @@ public class Main {
     public static void initialiseServer(int port) {
         try {
             server = HttpServer.create(new InetSocketAddress(port), 0);
-            System.out.println("Server started successfully on port "+port);
+            System.out.println("Web server started successfully on port "+port);
             server.createContext("/", new RootHandler());
             server.setExecutor(null);
             server.start();
@@ -86,7 +87,8 @@ public class Main {
                 if (parameters.containsKey(key)) {
                     Object obj = parameters.get(key);
                     if (obj instanceof List<?>) {
-                        List<String> values = (List<String>) obj;
+                        List<String> values;
+                        values = (List<String>) obj;
                         values.add(value);
 
                     } else if (obj instanceof String) {
