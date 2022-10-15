@@ -6,10 +6,11 @@ public class Account {
     private String email;
     private String firstname;
     private String surname;
+    private Account currentSession;
     private ArrayList<String> knownIPs;
 
 
-    public Account(String username, String email, String firstname, String surname, ArrayList<String> knownIPs) {
+    public Account(String username, String email, String firstname, String surname, Account currentSession, ArrayList<String> knownIPs) {
         this.username = username;
         this.email = email;
         this.firstname = firstname;

@@ -5,7 +5,7 @@ public class Session {
     private Account hostUser;
     private ArrayList<Account> clientUsers;
 
-    public Session() {
+    public Session(Account hostUser) {
 
     }
 }

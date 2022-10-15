@@ -2,7 +2,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class AccountManager {
 
@@ -10,13 +9,15 @@ public class AccountManager {
 
     public static void createNew(String originClient, Account account) {
         // check account with same/some same details does not exist, add account to database
-
     }
 
     public static void resetPassword(Account account) {
 
     }
 
+    /*
+    Returns null if an account cannot be found in cache under that username
+     */
     public static Account getAccountForceFromCache(String username) {
         for (Account account : accountCache) {
             if (account.getUsername().equalsIgnoreCase(username)) {
@@ -26,6 +27,9 @@ public class AccountManager {
         return null;
     }
 
+    /*
+    Returns null if an account cannot be found in database under that username
+     */
     public static Account getAccountForceFromDatabase(String username) {
         ResultSet accountResult = MySQLInterface.executeStatement("select * from users where username = '{0}'".replace("{0}", username));
         try {
@@ -45,6 +49,9 @@ public class AccountManager {
         return null;  //RETURN ACCOUNT
     }
 
+    /*
+    Returns null if an account cannot be found under that username
+     */
     public static Account getAccount(String username) {
         for (Account account : accountCache) {
             if (account.getUsername().equalsIgnoreCase(username)) {
@@ -62,7 +69,7 @@ public class AccountManager {
                     }
                 }
             }
-            addAccountToCache(new Account(userInfo.get("username"), userInfo.get("email"), userInfo.get("firstname"), userInfo.get("surname"), null));
+            addAccountToCache(new Account(userInfo.get("username"), userInfo.get("email"), userInfo.get("firstname"), userInfo.get("surname"), null, null));
             // TODO KNOWN IPS SHOULD NOT BE NULL - REQUIRES OF CONVERSION FROM ARRAYLIST TO JSON FOR UPLOAD TO DATABASE
         }
         catch (SQLException e) {
@@ -72,6 +79,9 @@ public class AccountManager {
         return null;
     }
 
+    /*
+    Returns null if an account cannot be found under that email
+     */
     public static Account getAccountByEmail(String email) {
         return null;
     }
