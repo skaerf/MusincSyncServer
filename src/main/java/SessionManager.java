@@ -3,11 +3,30 @@ import java.util.HashMap;
 
 public class SessionManager {
 
-    private static HashMap<Account, ArrayList<Account>> sessionCache = new HashMap<>();
+    private static final HashMap<Account, ArrayList<Account>> sessionCache = new HashMap<>();
 
-    public static void createNewSession(Account hostUser) {
-        Session session = new Session(hostUser);
-        // TODO add session to sessionCache
+    /*
+    clientUsers SHOULD be null upon creation - there should be no clients joining.
+    Variable is only passable if it is absolutely required for whatever reason.
+    Due to this, there is another function.
+    Returns the session that is created
+     */
+    public static Session createNewSession(Account hostUser, ArrayList<Account> clientUsers) {
+        Session session = new Session(hostUser, clientUsers);
+        sessionCache.put(hostUser, clientUsers);
+        return session;
+    }
+
+    /*
+    clientUsers SHOULD be null upon creation - there should be no clients joining.
+    Variable is only passable if it is absolutely required for whatever reason.
+    Due to this, there is another function.
+    Returns the session that is created
+     */
+    public static Session createNewSession(Account hostUser) {
+        Session session = new Session(hostUser, null);
+        sessionCache.put(hostUser, null);
+        return session;
     }
 
     /*
@@ -26,7 +45,7 @@ public class SessionManager {
                 }
             }
             if (accountSearch) {
-                session.add(clientUser);
+                sessionCache.get(hostUser).add(clientUser);
                 return true;
             }
             else {
