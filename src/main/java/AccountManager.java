@@ -39,7 +39,7 @@ public class AccountManager {
     /*
     Returns null if an account cannot be found in database under that username
      */
-    public static Account getAccountForceFromDatabase(String username) {
+    public static boolean findAccountInDatabase(String username) {
         ResultSet accountResult = MySQLInterface.executeStatement("select * from users where username = '{0}'".replace("{0}", username));
         try {
             if (accountResult != null) {
@@ -55,7 +55,7 @@ public class AccountManager {
             e.printStackTrace();
             System.out.println("System could not iterate through MySQL response");
         }
-        return null;  //RETURN ACCOUNT
+        return false;
     }
 
     /*
@@ -79,7 +79,6 @@ public class AccountManager {
                 }
             }
             Account account = new Account(userInfo.get("username"), userInfo.get("email"), userInfo.get("firstname"), userInfo.get("surname"), null, new ArrayList<>(Arrays.asList(userInfo.get("knownIPs").split(":"))));
-            // TODO KNOWN IPS SHOULD NOT BE NULL - REQUIRES OF CONVERSION FROM ARRAYLIST TO JSON FOR UPLOAD TO DATABASE
             accountCache.add(account);
             return account;
         }
