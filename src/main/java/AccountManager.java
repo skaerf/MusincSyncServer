@@ -1,6 +1,7 @@
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class AccountManager {
@@ -77,8 +78,10 @@ public class AccountManager {
                     }
                 }
             }
-            addAccountToCache(new Account(userInfo.get("username"), userInfo.get("email"), userInfo.get("firstname"), userInfo.get("surname"), null, null));
+            Account account = new Account(userInfo.get("username"), userInfo.get("email"), userInfo.get("firstname"), userInfo.get("surname"), null, new ArrayList<>(Arrays.asList(userInfo.get("knownIPs").split(":"))));
             // TODO KNOWN IPS SHOULD NOT BE NULL - REQUIRES OF CONVERSION FROM ARRAYLIST TO JSON FOR UPLOAD TO DATABASE
+            accountCache.add(account);
+            return account;
         }
         catch (SQLException e) {
             e.printStackTrace();
@@ -91,11 +94,24 @@ public class AccountManager {
     Returns null if an account cannot be found under that email
      */
     public static Account getAccountByEmail(String email) {
-        // TODO pull account from database using email
+        ResultSet accountResult = MySQLInterface.executeStatement("select * from users where email = '{0}'".replace("{0}", email));
+        try {
+            HashMap<String, String> userInfo = new HashMap<>();
+            if (accountResult != null) {
+                while (accountResult.next()) {
+                    for (int i = 1; i <= accountResult.getMetaData().getColumnCount(); i++) {
+                        String columnValue = accountResult.getString(i);
+                        userInfo.put(accountResult.getMetaData().getColumnName(i), columnValue);
+                    }
+                }
+            }
+            return getAccount(userInfo.get("username"));
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("System could not iterate through MySQL response");
+        }
         return null;
     }
 
-    private static void addAccountToCache(Account account) {
-        accountCache.add(account);
-    }
 }
