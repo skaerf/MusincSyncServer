@@ -5,14 +5,22 @@ import java.util.HashMap;
 
 public class AccountManager {
 
-    private static ArrayList<Account> accountCache = new ArrayList<>();
+    private static final ArrayList<Account> accountCache = new ArrayList<>();
 
-    public static void createNew(String originClient, Account account) {
+    /*
+    This exists because if an account is created with nothing other than the new Account() method there may
+    potentially be another account that exists with some of the same credentials.
+    This method is designed to prevent that and therefore is required.
+    Returns true if account was created successfully, false if was not created.
+    Only time it would not be created would be if there are preexisting accounts with similar credentials.
+     */
+    public static boolean createNew(Account account) {
         // check account with same/some same details does not exist, add account to database
+        return false;
     }
 
     public static void resetPassword(Account account) {
-
+        // TODO add encryption system and passwords to accounts - maybe kept in a separate database for reasons of security?
     }
 
     /*
@@ -83,10 +91,11 @@ public class AccountManager {
     Returns null if an account cannot be found under that email
      */
     public static Account getAccountByEmail(String email) {
+        // TODO pull account from database using email
         return null;
     }
 
-    public static void addAccountToCache(Account account) {
+    private static void addAccountToCache(Account account) {
         accountCache.add(account);
     }
 }

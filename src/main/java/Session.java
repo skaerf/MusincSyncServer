@@ -2,12 +2,12 @@ import java.util.ArrayList;
 
 public class Session {
 
-    private Account hostUser;
-    private ArrayList<Account> clientUsers;
+    private final Account hostUser;
+    private final ArrayList<Account> clientUsers;
 
-    public Session(Account hostUser, ArrayList<Account> clientUsers) {
+    public Session(Account hostUser) {
         this.hostUser = hostUser;
-        this.clientUsers = clientUsers;
+        this.clientUsers = null;
     }
 
     public ArrayList<Account> getClientUsers() {

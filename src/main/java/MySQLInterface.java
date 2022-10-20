@@ -5,12 +5,12 @@ import java.util.HashMap;
 
 public class MySQLInterface {
 
-    private static String username = "serverTest";
-    private static String password = "muchTestMoment";
-    private static Statement statement;
+    private static final String username = "serverTest";
+    private static final String password = "muchTestMoment";
+    private static final Statement statement = null;
     private static Connection connection; //.createStatement()
 
-    public static boolean connectDatabase() {
+    public static void connectDatabase() {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
         }
@@ -29,37 +29,7 @@ public class MySQLInterface {
             }
         } catch (SQLException | UnknownHostException e) {
             e.printStackTrace();
-            return false;
         }
-        return true;
-    }
-
-    public static HashMap<String, String> getUser(String username) {
-        ResultSet resSet;
-        HashMap<String, String> userInfo = new HashMap<>();
-        try {
-            resSet = statement.executeQuery("select * from users where username = '{0}'".replace("{0}", username));
-        }
-        catch (SQLException e) {
-            System.out.println("Username request could not be processed by MySQL");
-            return null;
-        }
-        if (resSet != null) {
-            try {
-                while (resSet.next()) {
-                    for (int i = 1; i <= resSet.getMetaData().getColumnCount(); i++) {
-                        if (i > 1) System.out.print(",  ");
-                        String columnValue = resSet.getString(i);
-                        userInfo.put(resSet.getMetaData().getColumnName(i), columnValue);
-                    }
-                }
-            }
-            catch (SQLException e) {
-                e.printStackTrace();
-                System.out.println("System could not iterate through MySQL response");
-            }
-        }
-        return userInfo;
     }
 
     public static ResultSet executeStatement(String sqlString) {

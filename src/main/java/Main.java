@@ -3,7 +3,6 @@ import com.sun.net.httpserver.HttpServer;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -56,6 +55,7 @@ public class Main {
             server = HttpServer.create(new InetSocketAddress(port), 0);
             System.out.println("Web server started successfully on port "+port);
             server.createContext("/", new RootHandler());
+            server.createContext("/get", new GetHandler());
             server.setExecutor(null);
             server.start();
             localIP = Inet4Address.getLocalHost().getHostAddress();
