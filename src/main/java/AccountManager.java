@@ -12,28 +12,24 @@ public class AccountManager {
     This exists because if an account is created with nothing other than the new Account() method there may
     potentially be another account that exists with some of the same credentials.
     This method is designed to prevent that and therefore is required.
-    Returns true if account was created successfully, false if was not created.
+    Returns null if account was created successfully, a string with the reason if was not created.
     Only time it would not be created would be if there are preexisting accounts with similar credentials.
      */
-    public static boolean createNew(Account account) {
-        // check account with same/some same details does not exist, add account to database
-        return false;
+    public static String createNew(Account account) {
+        ResultSet usernameResult = MySQLInterface.executeStatement("select username from users where username = '{0}'".replace("{0}", account.getUsername()));
+        if (usernameResult != null) {
+            return "username";
+        }
+        ResultSet emailResult = MySQLInterface.executeStatement("select email from users where email = '{0}'".replace("{0}", account.getEmail()));
+        if (emailResult != null) {
+            return "email";
+        }
+        accountCache.add(account);
+        return null;
     }
 
     public static void resetPassword(Account account) {
         // TODO add encryption system and passwords to accounts - maybe kept in a separate database for reasons of security?
-    }
-
-    /*
-    Returns null if an account cannot be found in cache under that username
-     */
-    public static Account getAccountForceFromCache(String username) {
-        for (Account account : accountCache) {
-            if (account.getUsername().equalsIgnoreCase(username)) {
-                return account;
-            }
-        }
-        return null;
     }
 
     /*
@@ -58,6 +54,7 @@ public class AccountManager {
         return false;
     }
 
+    // TODO combine this with getAccountByEmail() as only one is necessary
     /*
     Returns null if an account cannot be found under that username
      */

@@ -18,9 +18,19 @@ public class GetHandler implements HttpHandler {
             String[] split = str.split("=");
             requestInfo.put(split[0], split[1]);
         }
-        // TODO EXECUTE REQUESTS
-        Main.parseQuery(requestedUri.getRawQuery(), parameters);
         String response = "Request received\n\n\n"+ requestInfo;
+        // TODO EXECUTE REQUESTS
+        if (requestInfo.get("task").equalsIgnoreCase("createAccount")) {
+            // TODO KNOWN IPS SHOULD NOT BE NULL
+            String creationResponse = AccountManager.createNew(new Account(requestInfo.get("username"), requestInfo.get("email"), requestInfo.get("firstname"), requestInfo.get("surname"), null, null));
+            if (creationResponse != null) {
+                response = response + "\n\n\nRESULT="+creationResponse;
+            }
+            else {
+                response = response = "\n\n\nRESULT=successful";
+            }
+        }
+        Main.parseQuery(requestedUri.getRawQuery(), parameters);
         he.sendResponseHeaders(200, response.length());
         OutputStream outStream = he.getResponseBody();
         outStream.write(response.getBytes());
