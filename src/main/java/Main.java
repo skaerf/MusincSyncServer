@@ -56,6 +56,7 @@ public class Main {
             System.out.println("Web server started successfully on port "+port);
             server.createContext("/", new RootHandler());
             server.createContext("/get", new GetHandler());
+            server.createContext("/createaccount", new HTTPCreateAccountHandler());
             server.setExecutor(null);
             server.start();
             localIP = Inet4Address.getLocalHost().getHostAddress();
