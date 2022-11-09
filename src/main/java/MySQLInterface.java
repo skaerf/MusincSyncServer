@@ -11,12 +11,7 @@ public class MySQLInterface {
     private static Connection connection; //.createStatement()
 
     public static void connectDatabase() {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        }
-        catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
+
         try {
             if (!Inet4Address.getLocalHost().getHostAddress().equalsIgnoreCase("192.168.56.1")) {
                 connection = DriverManager.getConnection("jdbc:mysql://home.skaerf.xyz:2291/usrs", username, password);

@@ -22,6 +22,8 @@ public class Main {
             try {
                 if (configFile.createNewFile()) {
                     System.out.println("Config file successfully created");
+                    System.out.println("Please enter a port into the config file and restart the program");
+                    System.exit(0);
                 }
             }
             catch (IOException e) {
