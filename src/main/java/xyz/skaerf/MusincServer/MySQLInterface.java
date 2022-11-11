@@ -1,3 +1,5 @@
+package xyz.skaerf.MusincServer;
+
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
 import java.sql.*;
@@ -24,6 +26,7 @@ public class MySQLInterface {
             }
         } catch (SQLException | UnknownHostException e) {
             e.printStackTrace();
+            System.out.println("\n\n[ERROR] MusincServer cannot find a valid driver for JDBC or the connection link is invalid.\n\n");
         }
     }
 

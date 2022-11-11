@@ -1,3 +1,5 @@
+package xyz.skaerf.MusincServer;
+
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 

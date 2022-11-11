@@ -1,3 +1,5 @@
+package xyz.skaerf.MusincServer;
+
 import java.util.ArrayList;
 
 public class Session {

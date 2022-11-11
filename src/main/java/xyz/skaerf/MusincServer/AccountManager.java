@@ -1,3 +1,5 @@
+package xyz.skaerf.MusincServer;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -9,7 +11,7 @@ public class AccountManager {
     private static final ArrayList<Account> accountCache = new ArrayList<>();
 
     /*
-    This exists because if an account is created with nothing other than the new Account() method there may
+    This exists because if an account is created with nothing other than the new xyz.skaerf.MusincServer.Account() method there may
     potentially be another account that exists with some of the same credentials.
     This method is designed to prevent that and therefore is required.
     Returns null if account was created successfully, a string with the reason if was not created.
