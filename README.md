@@ -1,3 +1,3 @@
 **MusincSyncServer**
 
-Main backend for Musinc clients to sync their music
+xyz.skaerf.MusincServer.Main backend for Musinc clients to sync their music
