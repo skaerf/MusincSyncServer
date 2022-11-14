@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Scanner;
 
 public class Main {
 
@@ -76,9 +77,13 @@ public class Main {
     public static String getIP() {
         try {
             URLConnection con = new URL("https://api.myip.com").openConnection();
-            con.setRequestProperty("Accept-Charset", StandardCharsets.UTF_8.name());
             InputStream response = con.getInputStream();
-            String ip = response.toString().split(",")[0].split(":")[1].replace('"', ' ').trim();
+            String responseBody;
+            try (Scanner scanner = new Scanner(response)) {
+                responseBody = scanner.useDelimiter("\\A").next();
+                System.out.println(responseBody);
+            }
+            String ip = responseBody.split(",")[0].split(":")[1].replace('"', ' ').trim();
             return ip;
         }
         catch (IOException e) {
