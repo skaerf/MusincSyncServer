@@ -4,7 +4,6 @@ import com.sun.net.httpserver.HttpServer;
 
 import java.io.*;
 import java.net.*;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -63,6 +62,7 @@ public class Main {
             server.createContext("/", new RootHandler());
             server.createContext("/get", new GetHandler());
             server.createContext("/createaccount", new HTTPCreateAccountHandler());
+            server.createContext("/getuser", new HTTPGetUser());
             server.setExecutor(null);
             server.start();
             localIP = Inet4Address.getLocalHost().getHostAddress();
@@ -83,8 +83,7 @@ public class Main {
                 responseBody = scanner.useDelimiter("\\A").next();
                 System.out.println(responseBody);
             }
-            String ip = responseBody.split(",")[0].split(":")[1].replace('"', ' ').trim();
-            return ip;
+            return responseBody.split(",")[0].split(":")[1].replace('"', ' ').trim();
         }
         catch (IOException e) {
             e.printStackTrace();
