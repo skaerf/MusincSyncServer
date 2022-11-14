@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpServer;
 
 import java.io.*;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -64,12 +65,26 @@ public class Main {
             server.setExecutor(null);
             server.start();
             localIP = Inet4Address.getLocalHost().getHostAddress();
-            System.out.println("http://"+localIP+":"+port);
+            System.out.println("http://"+getIP()+":"+port);
         }
         catch (IOException e) {
             e.printStackTrace();
         }
 
+    }
+
+    public static String getIP() {
+        try {
+            URLConnection con = new URL("https://api.myip.com").openConnection();
+            con.setRequestProperty("Accept-Charset", StandardCharsets.UTF_8.name());
+            InputStream response = con.getInputStream();
+            String ip = response.toString().split(",")[0].split(":")[1].replace('"', ' ').trim();
+            return ip;
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public static void parseQuery(String query, HashMap<String, Object> parameters) throws UnsupportedEncodingException {
