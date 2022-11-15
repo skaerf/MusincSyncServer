@@ -16,11 +16,22 @@ public class Main {
     static String localIP;
     static HttpServer server;
     static int port;
+    static File logFolder;
 
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) {
         System.out.println("Initialising MusincSyncServer");
-        MySQLInterface.connectDatabase();
         configFile = new File("config.txt");
+        logFolder = new File("logs/");
+        if (!logFolder.exists()) {
+            if (logFolder.mkdir()) {
+                System.out.println("Logs directory created successfully");
+                ErrorHandler.logDir = true;
+            }
+            else {
+                System.out.println("Logs directory could not be created. Logs will not be created upon error");
+                ErrorHandler.logDir = false;
+            }
+        }
         if (!configFile.exists()) {
             try {
                 if (configFile.createNewFile()) {
@@ -30,13 +41,12 @@ public class Main {
                 }
             }
             catch (IOException e) {
-                System.out.println("Could not create config file, please allow access for file creation");
-                System.exit(0);
+                ErrorHandler.fatal("Could not create config file, please allow access for file creation", e.getMessage());
             }
         }
         else {
-            BufferedReader br = new BufferedReader(new FileReader(configFile));
             try {
+                BufferedReader br = new BufferedReader(new FileReader(configFile));
                 String line = br.readLine();
                 while (line != null) {
                     String key = line.split(":")[0];
@@ -51,6 +61,7 @@ public class Main {
             }
 
         }
+        MySQLInterface.connectDatabase();
         port = Integer.parseInt(configValues.get("port"));
         initialiseServer(port);
     }
@@ -69,7 +80,7 @@ public class Main {
             System.out.println("http://"+getIP()+":"+port);
         }
         catch (IOException e) {
-            e.printStackTrace();
+            ErrorHandler.fatal("Could not start web server", e.getMessage());
         }
 
     }
@@ -86,7 +97,7 @@ public class Main {
             return responseBody.split(",")[0].split(":")[1].replace('"', ' ').trim();
         }
         catch (IOException e) {
-            e.printStackTrace();
+            ErrorHandler.fatal("Could not resolve IP API", e.getMessage());
         }
         return null;
     }
@@ -109,7 +120,7 @@ public class Main {
                     }
                 }
                 catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
+                    ErrorHandler.fatal("Could not respond to HTTP request", e.getMessage());
                 }
                 if (parameters.containsKey(key)) {
                     Object obj = parameters.get(key);

@@ -3,7 +3,6 @@ package xyz.skaerf.MusincServer;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
 import java.sql.*;
-import java.util.HashMap;
 
 public class MySQLInterface {
 
@@ -13,7 +12,6 @@ public class MySQLInterface {
     private static Connection connection; //.createStatement()
 
     public static void connectDatabase() {
-
         try {
             if (!Inet4Address.getLocalHost().getHostAddress().equalsIgnoreCase("192.168.56.1")) {
                 connection = DriverManager.getConnection("jdbc:mysql://home.skaerf.xyz:2291/usrs", username, password);
@@ -21,12 +19,10 @@ public class MySQLInterface {
                 //ResultSet resultSet = statement.executeQuery("select * from *");
             }
             else {
-                System.out.println("Not going to attempt a connection to database due to MySQL access being blocked by institution network");
-                System.out.println("Notice some features will be unavailable and/or fire errors due to this");
+                ErrorHandler.warn("Not going to attempt a connection to database due to MySQL access being blocked by institution network. Notice some features will be unavailable and/or fire errors due to this");
             }
         } catch (SQLException | UnknownHostException e) {
-            e.printStackTrace();
-            System.out.println("\n\n[ERROR] MusincServer cannot find a valid driver for JDBC or the connection link is invalid.\n\n");
+            ErrorHandler.fatal("Cannot find a valid driver for JDBC or the connection link is invalid", e.getMessage());
         }
     }
 

@@ -50,8 +50,7 @@ public class AccountManager {
             }
         }
         catch (SQLException e) {
-            e.printStackTrace();
-            System.out.println("System could not iterate through MySQL response");
+            ErrorHandler.fatal("System could not iterate through MySQL response", e.getMessage());
         }
         return false;
     }
@@ -82,8 +81,7 @@ public class AccountManager {
             return account;
         }
         catch (SQLException e) {
-            e.printStackTrace();
-            System.out.println("System could not iterate through MySQL response");
+            ErrorHandler.fatal("System could not iterate through MySQL response", e.getMessage());
         }
         return null;
     }
@@ -106,8 +104,7 @@ public class AccountManager {
             return getAccount(userInfo.get("username"));
         }
         catch (SQLException e) {
-            e.printStackTrace();
-            System.out.println("System could not iterate through MySQL response");
+            ErrorHandler.fatal("System could not iterate through MySQL response", e.getMessage());
         }
         return null;
     }
