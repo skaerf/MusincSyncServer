@@ -32,6 +32,9 @@ public class Main {
                 ErrorHandler.logDir = false;
             }
         }
+        else {
+            ErrorHandler.logDir = true;
+        }
         if (!configFile.exists()) {
             try {
                 if (configFile.createNewFile()) {
@@ -41,7 +44,7 @@ public class Main {
                 }
             }
             catch (IOException e) {
-                ErrorHandler.fatal("Could not create config file, please allow access for file creation", e.getMessage());
+                ErrorHandler.fatal("Could not create config file, please allow access for file creation", e.getStackTrace());
             }
         }
         else {
@@ -80,7 +83,7 @@ public class Main {
             System.out.println("http://"+getIP()+":"+port);
         }
         catch (IOException e) {
-            ErrorHandler.fatal("Could not start web server", e.getMessage());
+            ErrorHandler.fatal("Could not start web server", e.getStackTrace());
         }
 
     }
@@ -97,7 +100,7 @@ public class Main {
             return responseBody.split(",")[0].split(":")[1].replace('"', ' ').trim();
         }
         catch (IOException e) {
-            ErrorHandler.fatal("Could not resolve IP API", e.getMessage());
+            ErrorHandler.fatal("Could not resolve IP API", e.getStackTrace());
         }
         return null;
     }
@@ -120,7 +123,7 @@ public class Main {
                     }
                 }
                 catch (UnsupportedEncodingException e) {
-                    ErrorHandler.fatal("Could not respond to HTTP request", e.getMessage());
+                    ErrorHandler.fatal("Could not respond to HTTP request", e.getStackTrace());
                 }
                 if (parameters.containsKey(key)) {
                     Object obj = parameters.get(key);

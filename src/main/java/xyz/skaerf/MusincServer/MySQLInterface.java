@@ -21,7 +21,7 @@ public class MySQLInterface {
             }
         }
         catch (SQLException | UnknownHostException e) {
-            ErrorHandler.fatal("Cannot find a valid driver for JDBC or the connection link is invalid", e.getMessage());
+            ErrorHandler.fatal(e.getMessage(), e.getStackTrace());
         }
     }
 

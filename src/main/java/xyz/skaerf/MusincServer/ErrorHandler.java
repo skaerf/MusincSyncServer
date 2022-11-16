@@ -8,17 +8,20 @@ public class ErrorHandler {
 
     static boolean logDir;
 
-    public static void fatal(String errorMessage, String stackTrace) {
+    public static void fatal(String errorMessage, StackTraceElement[] stackTrace) {
         long currTime = System.currentTimeMillis();
         errorMessage = "[FATAL] "+errorMessage;
         errorMessage = "\n\n\n"+errorMessage+".\n\n\n";
         System.out.println(errorMessage);
         if (logDir) {
-            File logFile = new File("logs/log_fatal_"+currTime+".txt");
+            File logFile = new File("logs"+File.separator+"log_fatal_"+currTime+".txt");
             try {
                 if (logFile.createNewFile()) {
                     FileWriter writer = new FileWriter(logFile.getAbsolutePath());
-                    writer.write("At "+currTime+" (time in millis),\n\n"+stackTrace);
+                    writer.write("At "+currTime+" (time in millis),\n\n");
+                    for (StackTraceElement i : stackTrace) {
+                        writer.write(i.toString()+"\n");
+                    }
                     writer.close();
                     System.out.println("Error output has been saved to "+logFile.getName());
                 }
@@ -28,17 +31,20 @@ public class ErrorHandler {
             }
         }
     }
-    public static void warn(String errorMessage, String stackTrace) {
+    public static void warn(String errorMessage, StackTraceElement[] stackTrace) {
         errorMessage = "[WARN] "+errorMessage;
         errorMessage = "\n\n\n"+errorMessage+".\n\n\n";
         System.out.println(errorMessage);
         long currTime = System.currentTimeMillis();
         if (logDir) {
-            File logFile = new File("logs/log_warn_"+currTime+".txt");
+            File logFile = new File("logs"+File.separator+"log_warn_"+currTime+".txt");
             try {
                 if (logFile.createNewFile()) {
                     FileWriter writer = new FileWriter(logFile.getAbsolutePath());
-                    writer.write("At "+currTime+" (time in millis),\n\n"+stackTrace);
+                    writer.write("At "+currTime+" (time in millis),\n\n");
+                    for (StackTraceElement i : stackTrace) {
+                        writer.write(i.toString()+"\n");
+                    }
                     writer.close();
                     System.out.println("Error output has been saved to "+logFile.getName());
                 }
