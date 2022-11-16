@@ -35,31 +35,10 @@ public class AccountManager {
     }
 
     /*
-    Returns null if an account cannot be found in database under that username
-     */
-    public static boolean findAccountInDatabase(String username) {
-        ResultSet accountResult = MySQLInterface.executeStatement("select * from users where username = '{0}'".replace("{0}", username));
-        try {
-            if (accountResult != null) {
-                while (accountResult.next()) {
-                    for (int i = 1; i <= accountResult.getMetaData().getColumnCount(); i++) {
-                        String columnValue = accountResult.getString(i);
-                        //userInfo.put(accountResult.getMetaData().getColumnName(i), columnValue);
-                    }
-                }
-            }
-        }
-        catch (SQLException e) {
-            ErrorHandler.fatal("System could not iterate through MySQL response", e.getMessage());
-        }
-        return false;
-    }
-
-    // TODO combine this with getAccountByEmail() as only one is necessary
-    /*
-    Returns null if an account cannot be found under that username
+    Returns null if an account cannot be found under that username (or email if given string does not equal a username)
      */
     public static Account getAccount(String username) {
+        HashMap<String, String> userInfo = new HashMap<>();
         for (Account account : accountCache) {
             if (account.getUsername().equalsIgnoreCase(username)) {
                 return account;
@@ -67,7 +46,6 @@ public class AccountManager {
         }
         ResultSet accountResult = MySQLInterface.executeStatement("select * from users where username = '{0}'".replace("{0}", username));
         try {
-            HashMap<String, String> userInfo = new HashMap<>();
             if (accountResult != null) {
                 while (accountResult.next()) {
                     for (int i = 1; i <= accountResult.getMetaData().getColumnCount(); i++) {
@@ -81,18 +59,10 @@ public class AccountManager {
             return account;
         }
         catch (SQLException e) {
-            ErrorHandler.fatal("System could not iterate through MySQL response", e.getMessage());
+            ErrorHandler.warn(e.getMessage(), e.getStackTrace());
         }
-        return null;
-    }
-
-    /*
-    Returns null if an account cannot be found under that email
-     */
-    public static Account getAccountByEmail(String email) {
-        ResultSet accountResult = MySQLInterface.executeStatement("select * from users where email = '{0}'".replace("{0}", email));
+        accountResult = MySQLInterface.executeStatement("select * from users where email = '{0}'".replace("{0}", username));
         try {
-            HashMap<String, String> userInfo = new HashMap<>();
             if (accountResult != null) {
                 while (accountResult.next()) {
                     for (int i = 1; i <= accountResult.getMetaData().getColumnCount(); i++) {
@@ -104,9 +74,8 @@ public class AccountManager {
             return getAccount(userInfo.get("username"));
         }
         catch (SQLException e) {
-            ErrorHandler.fatal("System could not iterate through MySQL response", e.getMessage());
+            ErrorHandler.warn(e.getMessage(), e.getStackTrace());
         }
         return null;
     }
-
 }
