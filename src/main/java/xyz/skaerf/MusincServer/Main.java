@@ -17,6 +17,7 @@ public class Main {
     static HttpServer server;
     static int port;
     static File logFolder;
+    static List<Socket> unknownClients;
 
     public static void main(String[] args) {
         System.out.println("Initialising MusincSyncServer");
@@ -66,7 +67,16 @@ public class Main {
         }
         MySQLInterface.connectDatabase();
         port = Integer.parseInt(configValues.get("port"));
-        initialiseServer(port);
+        if (configValues.get("webserver").equalsIgnoreCase("true")) {
+            initialiseServer(port);
+        }
+        else if (configValues.get("webserver").equalsIgnoreCase("false")) {
+            initialiseServerSocket(port);
+        }
+        else {
+            ErrorHandler.warn("webserver value in config is not valid or does not exist, defaulting to webserver=true");
+            initialiseServer(port);
+        }
     }
 
     public static void initialiseServer(int port) {
@@ -88,6 +98,18 @@ public class Main {
 
     }
 
+    public static void initialiseServerSocket(int port) {
+        try {
+            ServerSocket serverSocket = new ServerSocket(port);
+            Socket socket = serverSocket.accept();
+            unknownClients.add(socket);
+
+        }
+        catch (IOException e) {
+            ErrorHandler.fatal("Could not start server socket", e.getStackTrace());
+        }
+    }
+
     public static String getIP() {
         try {
             URLConnection con = new URL("https://api.myip.com").openConnection();
@@ -100,7 +122,7 @@ public class Main {
             return responseBody.split(",")[0].split(":")[1].replace('"', ' ').trim();
         }
         catch (IOException e) {
-            ErrorHandler.fatal("Could not resolve IP API", e.getStackTrace());
+            ErrorHandler.warn("Could not resolve IP API", e.getStackTrace());
         }
         return null;
     }
