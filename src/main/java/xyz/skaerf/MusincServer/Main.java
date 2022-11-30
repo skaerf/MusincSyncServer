@@ -12,12 +12,13 @@ import java.util.Scanner;
 public class Main {
 
     static HashMap<String, String> configValues = new HashMap<>();
+    public static HashMap<ClientHandler, Account> activeClients = new HashMap<>();
     static File configFile;
     static String localIP;
-    static HttpServer server;
+    static HttpServer httpServer;
+    static MainServer server;
     static int port;
     static File logFolder;
-    static List<Socket> unknownClients;
 
     public static void main(String[] args) {
         System.out.println("Initialising MusincSyncServer");
@@ -68,27 +69,31 @@ public class Main {
         MySQLInterface.connectDatabase();
         port = Integer.parseInt(configValues.get("port"));
         if (configValues.get("webserver").equalsIgnoreCase("true")) {
+            System.out.println("Initialising web server");
             initialiseServer(port);
         }
         else if (configValues.get("webserver").equalsIgnoreCase("false")) {
+            System.out.println("Initialising server socket");
             initialiseServerSocket(port);
         }
         else {
             ErrorHandler.warn("webserver value in config is not valid or does not exist, defaulting to webserver=true");
+            configValues.put("webserver", "true");
+            System.out.println("Initialising web server");
             initialiseServer(port);
         }
     }
 
     public static void initialiseServer(int port) {
         try {
-            server = HttpServer.create(new InetSocketAddress(port), 0);
+            httpServer = HttpServer.create(new InetSocketAddress(port), 0);
             System.out.println("Web server started successfully on port "+port);
-            server.createContext("/", new RootHandler());
-            server.createContext("/get", new GetHandler());
-            server.createContext("/createaccount", new HTTPCreateAccountHandler());
-            server.createContext("/getuser", new HTTPGetUser());
-            server.setExecutor(null);
-            server.start();
+            httpServer.createContext("/", new RootHandler());
+            httpServer.createContext("/get", new GetHandler());
+            httpServer.createContext("/createaccount", new HTTPCreateAccountHandler());
+            httpServer.createContext("/getuser", new HTTPGetUser());
+            httpServer.setExecutor(null);
+            httpServer.start();
             localIP = Inet4Address.getLocalHost().getHostAddress();
             System.out.println("http://"+getIP()+":"+port);
         }
@@ -99,15 +104,7 @@ public class Main {
     }
 
     public static void initialiseServerSocket(int port) {
-        try {
-            ServerSocket serverSocket = new ServerSocket(port);
-            Socket socket = serverSocket.accept();
-            unknownClients.add(socket);
-
-        }
-        catch (IOException e) {
-            ErrorHandler.fatal("Could not start server socket", e.getStackTrace());
-        }
+        server = new MainServer(port);
     }
 
     public static String getIP() {
