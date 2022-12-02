@@ -26,6 +26,7 @@ public class MainServer {
         try {
             while (!serSoc.isClosed()) {
                 Socket socket = serSoc.accept();
+                System.out.println("Client attempting to connect on "+socket.getInetAddress());
                 ClientHandler clientHandler = new ClientHandler(socket);
                 Thread thread = new Thread(clientHandler);
                 thread.start();

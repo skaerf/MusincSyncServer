@@ -12,7 +12,7 @@ import java.util.Scanner;
 public class Main {
 
     static HashMap<String, String> configValues = new HashMap<>();
-    public static HashMap<ClientHandler, Account> activeClients = new HashMap<>();
+    public static List<ClientHandler> activeClients = new ArrayList<>();
     static File configFile;
     static String localIP;
     static HttpServer httpServer;

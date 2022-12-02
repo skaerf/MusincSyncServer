@@ -38,43 +38,45 @@ public class AccountManager {
     Returns null if an account cannot be found under that username (or email if given string does not equal a username)
      */
     public static Account getAccount(String username) {
-        HashMap<String, String> userInfo = new HashMap<>();
-        for (Account account : accountCache) {
-            if (account.getUsername().equalsIgnoreCase(username)) {
+        if (MySQLInterface.isConnected) {
+            HashMap<String, String> userInfo = new HashMap<>();
+            for (Account account : accountCache) {
+                if (account.getUsername().equalsIgnoreCase(username)) {
+                    return account;
+                }
+            }
+            ResultSet accountResult = MySQLInterface.executeStatement("select * from users where username = '{0}'".replace("{0}", username));
+            try {
+                if (accountResult != null) {
+                    while (accountResult.next()) {
+                        for (int i = 1; i <= accountResult.getMetaData().getColumnCount(); i++) {
+                            String columnValue = accountResult.getString(i);
+                            userInfo.put(accountResult.getMetaData().getColumnName(i), columnValue);
+                        }
+                    }
+                }
+                Account account = new Account(userInfo.get("username"), userInfo.get("email"), userInfo.get("firstname"), userInfo.get("surname"), null, new ArrayList<>(Arrays.asList(userInfo.get("knownIPs").split(":"))));
+                accountCache.add(account);
                 return account;
             }
-        }
-        ResultSet accountResult = MySQLInterface.executeStatement("select * from users where username = '{0}'".replace("{0}", username));
-        try {
-            if (accountResult != null) {
-                while (accountResult.next()) {
-                    for (int i = 1; i <= accountResult.getMetaData().getColumnCount(); i++) {
-                        String columnValue = accountResult.getString(i);
-                        userInfo.put(accountResult.getMetaData().getColumnName(i), columnValue);
+            catch (SQLException e) {
+                ErrorHandler.warn(e.getMessage(), e.getStackTrace());
+            }
+            accountResult = MySQLInterface.executeStatement("select * from users where email = '{0}'".replace("{0}", username));
+            try {
+                if (accountResult != null) {
+                    while (accountResult.next()) {
+                        for (int i = 1; i <= accountResult.getMetaData().getColumnCount(); i++) {
+                            String columnValue = accountResult.getString(i);
+                            userInfo.put(accountResult.getMetaData().getColumnName(i), columnValue);
+                        }
                     }
                 }
+                return getAccount(userInfo.get("username"));
             }
-            Account account = new Account(userInfo.get("username"), userInfo.get("email"), userInfo.get("firstname"), userInfo.get("surname"), null, new ArrayList<>(Arrays.asList(userInfo.get("knownIPs").split(":"))));
-            accountCache.add(account);
-            return account;
-        }
-        catch (SQLException e) {
-            ErrorHandler.warn(e.getMessage(), e.getStackTrace());
-        }
-        accountResult = MySQLInterface.executeStatement("select * from users where email = '{0}'".replace("{0}", username));
-        try {
-            if (accountResult != null) {
-                while (accountResult.next()) {
-                    for (int i = 1; i <= accountResult.getMetaData().getColumnCount(); i++) {
-                        String columnValue = accountResult.getString(i);
-                        userInfo.put(accountResult.getMetaData().getColumnName(i), columnValue);
-                    }
-                }
+            catch (SQLException e) {
+                ErrorHandler.warn(e.getMessage(), e.getStackTrace());
             }
-            return getAccount(userInfo.get("username"));
-        }
-        catch (SQLException e) {
-            ErrorHandler.warn(e.getMessage(), e.getStackTrace());
         }
         return null;
     }
