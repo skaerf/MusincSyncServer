@@ -1,7 +1,10 @@
-package xyz.skaerf.MusincServer;
+package xyz.skaerf.MusincServer.HTTP;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import xyz.skaerf.MusincServer.Account;
+import xyz.skaerf.MusincServer.AccountManager;
+import xyz.skaerf.MusincServer.Main;
 
 import java.io.IOException;
 import java.io.OutputStream;

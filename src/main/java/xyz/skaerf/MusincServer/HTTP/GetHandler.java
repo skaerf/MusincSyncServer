@@ -1,14 +1,16 @@
-package xyz.skaerf.MusincServer;
+package xyz.skaerf.MusincServer.HTTP;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import xyz.skaerf.MusincServer.Main;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.HashMap;
 
-public class HTTPGetUser implements HttpHandler {
+public class GetHandler implements HttpHandler {
+
     @Override
     public void handle(HttpExchange he) throws IOException {
         HashMap<String, Object> parameters = new HashMap<>();
@@ -20,13 +22,7 @@ public class HTTPGetUser implements HttpHandler {
             requestInfo.put(split[0], split[1]);
         }
         String response = "Request received\n\n\n"+ requestInfo;
-        Account userAccount = AccountManager.getAccount(requestInfo.get("username"));
-        if (userAccount == null) {
-            response = response + "\n\n\nRESULT:null";
-        }
-        else {
-            response = response + "\n\n\nRESULT:";
-        }
+        // TODO EXECUTE REQUESTS NOT RELATED TO ESSENTIALS
         Main.parseQuery(requestedUri.getRawQuery(), parameters);
         he.sendResponseHeaders(200, response.length());
         OutputStream outStream = he.getResponseBody();
