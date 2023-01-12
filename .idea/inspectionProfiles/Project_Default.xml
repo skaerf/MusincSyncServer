@@ -13,6 +13,8 @@
       <option name="excludeList">
         <list>
           <option value="junit:junit" />
+          <option value="org.junit.jupiter:junit-jupiter-engine" />
+          <option value="org.junit.jupiter:junit-jupiter-api" />
         </list>
       </option>
     </inspection_tool>

@@ -1,6 +1,10 @@
 package xyz.skaerf.MusincServer;
 
 import com.sun.net.httpserver.HttpServer;
+import xyz.skaerf.MusincServer.HTTP.GetHandler;
+import xyz.skaerf.MusincServer.HTTP.HTTPCreateAccountHandler;
+import xyz.skaerf.MusincServer.HTTP.HTTPGetUser;
+import xyz.skaerf.MusincServer.HTTP.RootHandler;
 
 import java.io.*;
 import java.net.*;
