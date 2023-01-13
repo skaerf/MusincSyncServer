@@ -28,6 +28,27 @@ public class Main {
         System.out.println("Initialising MusincSyncServer");
         configFile = new File("config.txt");
         logFolder = new File("logs/");
+        createLogFolder();
+        createConfigFile();
+        MySQLInterface.connectDatabase();
+        port = Integer.parseInt(configValues.get("port"));
+        if (configValues.get("webserver").equalsIgnoreCase("true")) {
+            System.out.println("Initialising web server");
+            initialiseServer(port);
+        }
+        else if (configValues.get("webserver").equalsIgnoreCase("false")) {
+            System.out.println("Initialising server socket");
+            initialiseServerSocket(port);
+        }
+        else {
+            ErrorHandler.warn("webserver value in config is not valid or does not exist, defaulting to webserver:true");
+            configValues.put("webserver", "true");
+            System.out.println("Initialising web server");
+            initialiseServer(port);
+        }
+    }
+
+    private static void createLogFolder() {
         if (!logFolder.exists()) {
             if (logFolder.mkdir()) {
                 System.out.println("Logs directory created successfully");
@@ -41,6 +62,9 @@ public class Main {
         else {
             ErrorHandler.logDir = true;
         }
+    }
+
+    private static void createConfigFile() {
         if (!configFile.exists()) {
             try {
                 if (configFile.createNewFile()) {
@@ -69,22 +93,6 @@ public class Main {
                 System.out.println("Config info could not be loaded in");
             }
 
-        }
-        MySQLInterface.connectDatabase();
-        port = Integer.parseInt(configValues.get("port"));
-        if (configValues.get("webserver").equalsIgnoreCase("true")) {
-            System.out.println("Initialising web server");
-            initialiseServer(port);
-        }
-        else if (configValues.get("webserver").equalsIgnoreCase("false")) {
-            System.out.println("Initialising server socket");
-            initialiseServerSocket(port);
-        }
-        else {
-            ErrorHandler.warn("webserver value in config is not valid or does not exist, defaulting to webserver=true");
-            configValues.put("webserver", "true");
-            System.out.println("Initialising web server");
-            initialiseServer(port);
         }
     }
 
