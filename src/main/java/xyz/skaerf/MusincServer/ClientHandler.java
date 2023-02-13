@@ -44,7 +44,7 @@ public class ClientHandler implements Runnable {
             }
         }
         catch (IOException e) {
-            ErrorHandler.fatal("Could not close connection with client", e.getStackTrace());
+            ErrorHandler.warn("Could not close connection with client", e.getStackTrace());
         }
     }
 
