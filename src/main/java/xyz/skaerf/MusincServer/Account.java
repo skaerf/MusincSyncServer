@@ -1,5 +1,7 @@
 package xyz.skaerf.MusincServer;
 
+import xyz.skaerf.MusincServer.APIs.Users.SpotifyUser;
+
 import java.util.ArrayList;
 
 public class Account {
@@ -10,6 +12,7 @@ public class Account {
     private final String surname;
     private Session currentSession;
     private final ArrayList<String> knownIPs;
+    private SpotifyUser spotify;
 
 
     public Account(String username, String email, String firstname, String surname, Session currentSession, ArrayList<String> knownIPs) {
@@ -56,4 +59,14 @@ public class Account {
     public void createSession() {
         this.currentSession = new Session(this);
     }
+
+    public void createSpotifyUser() {
+        spotify = new SpotifyUser(this);
+    }
+
+    public SpotifyUser getSpotifyUser() {
+        return spotify;
+    }
+
+
 }
