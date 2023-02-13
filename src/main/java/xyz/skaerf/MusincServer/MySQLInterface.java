@@ -1,7 +1,5 @@
 package xyz.skaerf.MusincServer;
 
-import java.net.Inet4Address;
-import java.net.UnknownHostException;
 import java.sql.*;
 
 public class MySQLInterface {
@@ -21,7 +19,7 @@ public class MySQLInterface {
         }
         catch (SQLException e) {
             isConnected = false;
-            ErrorHandler.fatal(e.getMessage(), e.getStackTrace());
+            ErrorHandler.warn("Could not connect to database", e.getStackTrace());
         }
     }
 
@@ -33,7 +31,7 @@ public class MySQLInterface {
             return resSet;
         }
         catch (SQLException e) {
-            ErrorHandler.fatal("could not execute SQL statement", e.getStackTrace());
+            ErrorHandler.fatal("Could not execute SQL statement", e.getStackTrace());
             return null;
         }
     }
