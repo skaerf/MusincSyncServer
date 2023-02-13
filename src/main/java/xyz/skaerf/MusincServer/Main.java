@@ -1,6 +1,7 @@
 package xyz.skaerf.MusincServer;
 
 import com.sun.net.httpserver.HttpServer;
+import xyz.skaerf.MusincServer.APIs.Spotify;
 import xyz.skaerf.MusincServer.HTTP.GetHandler;
 import xyz.skaerf.MusincServer.HTTP.HTTPCreateAccountHandler;
 import xyz.skaerf.MusincServer.HTTP.HTTPGetUser;
@@ -23,6 +24,7 @@ public class Main {
     static MainServer server;
     static int port;
     static File logFolder;
+    static Account defaultAccount = null;
 
     public static void main(String[] args) {
         System.out.println("Initialising MusincSyncServer");
@@ -31,6 +33,15 @@ public class Main {
         createLogFolder();
         createConfigFile();
         MySQLInterface.connectDatabase();
+        Spotify.initialiseAPILink();
+
+        defaultAccount = AccountManager.createNew(new Account("skaerf","seitna@outlook.com","Lawrence","Harrison",null, null));
+        assert defaultAccount != null;
+        defaultAccount.createSpotifyUser();
+        defaultAccount.createSession();
+        String[] uris = {"spotify:track:2IPKXJWPjC5AdDtOxTDkqA","spotify:track:45ewhNby8MgyWw6HmT7HKJ", "spotify:track:4ESWJepzBtY2lR9oZDYVaP"};
+        //defaultAccount.getSpotifyUser().addToPlaylist(defaultAccount.getSpotifyUser().createPlaylist("hell yeah").getId(), uris);
+
         port = Integer.parseInt(configValues.get("port"));
         if (configValues.get("webserver").equalsIgnoreCase("true")) {
             System.out.println("Initialising web server");
@@ -117,6 +128,17 @@ public class Main {
 
     public static void initialiseServerSocket(int port) {
         server = new MainServer(port);
+    }
+
+    public static void endProcess(int exitInt) {
+        System.out.println("Ending process");
+        if (configValues.get("webserver").equalsIgnoreCase("true")) {
+            httpServer.stop(0);
+        }
+        else if (configValues.get("webserver").equalsIgnoreCase("false")) {
+            server.closeServer();
+        }
+        System.exit(exitInt);
     }
 
     public static String getIP() {
