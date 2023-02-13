@@ -19,4 +19,10 @@ public class Session {
     public Account getHostUser() {
         return hostUser;
     }
+
+    public void pauseAll() {
+        for (Account user : getClientUsers()) {
+            user.getSpotifyUser().pausePlayback();
+        }
+    }
 }
