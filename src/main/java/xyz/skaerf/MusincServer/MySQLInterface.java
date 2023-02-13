@@ -10,20 +10,16 @@ public class MySQLInterface {
     private static final String password = "muchTestMoment";
     private static Connection connection;
 
-    public static boolean isConnected;
+    public static boolean isConnected = true;
 
     public static void connectDatabase() {
         try {
-            if (!Inet4Address.getLocalHost().getHostAddress().equalsIgnoreCase("192.168.56.1")) {
-                connection = DriverManager.getConnection("jdbc:mysql://home.skaerf.xyz:2291/usrs", username, password);
+            connection = DriverManager.getConnection("jdbc:mysql://home.skaerf.xyz:2291/usrs", username, password);
+            if (connection.isValid(50)) {
                 System.out.println("Successfully connected to database");
-                isConnected = true;
-            }
-            else {
-                ErrorHandler.warn("Not going to attempt a connection to database due to MySQL access being blocked by institution network. Notice some features will be unavailable and/or fire errors due to this");
             }
         }
-        catch (SQLException | UnknownHostException e) {
+        catch (SQLException e) {
             isConnected = false;
             ErrorHandler.fatal(e.getMessage(), e.getStackTrace());
         }
@@ -37,6 +33,7 @@ public class MySQLInterface {
             return resSet;
         }
         catch (SQLException e) {
+            ErrorHandler.fatal("could not execute SQL statement", e.getStackTrace());
             return null;
         }
     }

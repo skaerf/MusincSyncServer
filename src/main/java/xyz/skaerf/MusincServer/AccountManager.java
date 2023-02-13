@@ -14,20 +14,27 @@ public class AccountManager {
     This exists because if an account is created with nothing other than the new xyz.skaerf.MusincServer.Account() method there may
     potentially be another account that exists with some of the same credentials.
     This method is designed to prevent that and therefore is required.
-    Returns null if account was created successfully, a string with the reason if was not created.
+    Returns account if account was created successfully, null if was not created.
     Only time it would not be created would be if there are preexisting accounts with similar credentials.
      */
-    public static String createNew(Account account) {
+    public static Account createNew(Account account) {
         ResultSet usernameResult = MySQLInterface.executeStatement("select username from users where username = '{0}'".replace("{0}", account.getUsername()));
-        if (usernameResult != null) {
-            return "username";
+        try {
+            if (usernameResult.next()) {
+                System.out.print("returning null user");
+                return null;
+            }
+            ResultSet emailResult = MySQLInterface.executeStatement("select email from users where email = '{0}'".replace("{0}", account.getEmail()));
+            if (emailResult.next()) {
+                System.out.print("returning null email");
+                return null;
+            }
         }
-        ResultSet emailResult = MySQLInterface.executeStatement("select email from users where email = '{0}'".replace("{0}", account.getEmail()));
-        if (emailResult != null) {
-            return "email";
+        catch (SQLException e) {
+            ErrorHandler.warn("could not parse response from ResultSet upon requesting createNew account data", e.getStackTrace());
         }
         accountCache.add(account);
-        return null;
+        return account;
     }
 
     public static void resetPassword(Account account) {
@@ -39,8 +46,10 @@ public class AccountManager {
      */
     public static Account getAccount(String username) {
         if (MySQLInterface.isConnected) {
+            System.out.println("yes");
             HashMap<String, String> userInfo = new HashMap<>();
             for (Account account : accountCache) {
+                System.out.println(account.getUsername());
                 if (account.getUsername().equalsIgnoreCase(username)) {
                     return account;
                 }
@@ -76,6 +85,15 @@ public class AccountManager {
             }
             catch (SQLException e) {
                 ErrorHandler.warn(e.getMessage(), e.getStackTrace());
+            }
+        }
+        else {
+            ErrorHandler.warn("cannot check database for accounts, only live cache. account may still exist even if it does not get returned");
+            for (Account account : accountCache) {
+                System.out.println(account.getUsername());
+                if (account.getUsername().equalsIgnoreCase(username)) {
+                    return account;
+                }
             }
         }
         return null;
