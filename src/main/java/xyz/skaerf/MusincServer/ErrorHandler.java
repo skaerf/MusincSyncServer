@@ -30,6 +30,7 @@ public class ErrorHandler {
                 logDir = false;
             }
         }
+        Main.endProcess(0);
     }
     public static void warn(String errorMessage, StackTraceElement[] stackTrace) {
         errorMessage = "[WARN] "+errorMessage;
