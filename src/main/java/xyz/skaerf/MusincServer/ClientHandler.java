@@ -2,26 +2,58 @@ package xyz.skaerf.MusincServer;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.regex.PatternSyntaxException;
 
 public class ClientHandler implements Runnable {
 
     private Socket socket;
     private BufferedReader buffReader;
-    private BufferedWriter buffWriter;
+    private PrintWriter buffWriter;
     private Account userAccount;
 
     public ClientHandler(Socket socket) {
         try {
             this.socket = socket;
-            this.buffWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
+            this.buffWriter = new PrintWriter(socket.getOutputStream(), true);
             this.buffReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            userAccount = AccountManager.getAccount(this.buffReader.readLine());
-            if (userAccount != null) {
-                this.buffWriter.write("acc;"+ userAccount.getUsername()+":"+ userAccount.getFirstname()+":"+ userAccount.getSurname());
-                Main.activeClients.add(this);
+            String read = this.buffReader.readLine();
+            String arg = "";
+            String data = "";
+            try {
+                arg = read.split(";")[0]+";";
+                data = read.split(";")[1];
             }
-            else {
-                this.buffWriter.write("den;");
+            catch (PatternSyntaxException e) {
+                System.out.println("Client is not correctly formatting requests to server. Closing connection");
+                this.closeConnection();
+            }
+            if (arg.equalsIgnoreCase(RequestArgs.LOG_IN)) {
+                userAccount = AccountManager.getAccount(data);
+                if (userAccount != null && userAccount.getUsername() != null) {
+                    this.buffWriter.println(RequestArgs.ACCEPTED+ userAccount.getUsername()+":!:"+ userAccount.getFirstname()+":!:"+ userAccount.getSurname()+":!:"+userAccount.getEmail()+"\n");
+                    Main.activeClients.add(this);
+                    System.out.println(socket.getInetAddress().getHostAddress()+" connected as "+userAccount.getUsername());
+                }
+                else {
+                    this.buffWriter.println(format(RequestArgs.DENIED));
+                    this.closeConnection();
+                }
+            }
+            else if (arg.equalsIgnoreCase(RequestArgs.CREATE_ACCOUNT)) {
+                String[] dataList = data.split(":!:");
+                if (dataList.length != 3) {
+                    this.buffWriter.println(format(RequestArgs.NOT_ENOUGH_ARGS));
+                    this.closeConnection();
+                }
+                Object verify = AccountManager.createNew(userAccount = new Account(dataList[0], dataList[1], dataList[2], dataList[3], null, null));
+                if (verify instanceof Account) {
+                    this.buffWriter.println(format(RequestArgs.CREATE_ACCOUNT));
+                    userAccount = (Account) verify;
+                }
+                else {
+                    this.buffWriter.println(format(RequestArgs.DENIED+verify));
+                    this.closeConnection();
+                }
             }
         }
         catch (IOException e) {
@@ -32,6 +64,7 @@ public class ClientHandler implements Runnable {
 
     public void closeConnection() {
         Main.activeClients.remove(this);
+        AccountManager.removeFromCache(userAccount);
         try {
             if (this.buffReader != null) {
                 this.buffReader.close();
@@ -54,10 +87,10 @@ public class ClientHandler implements Runnable {
         while (socket.isConnected()) {
             try {
                 msgFromClient = this.buffReader.readLine();
-                System.out.println(msgFromClient);
             }
             catch (IOException e) {
-                ErrorHandler.fatal("Could not read message from client", e.getStackTrace());
+                ErrorHandler.warn("Client at "+socket.getInetAddress().getHostAddress()+" ("+userAccount.getUsername()+") dropped connection");
+                this.closeConnection();
                 break;
             }
         }
@@ -65,5 +98,9 @@ public class ClientHandler implements Runnable {
 
     private Account getAccount() {
         return this.userAccount;
+    }
+
+    private String format(String var) {
+        return var+"\n";
     }
 }

@@ -26,9 +26,14 @@ public class MySQLInterface {
     public static ResultSet executeStatement(String sqlString) {
         ResultSet resSet;
         try {
-            Statement statement = connection.createStatement();
-            resSet = statement.executeQuery(sqlString);
-            return resSet;
+            if (connection != null) {
+                Statement statement = connection.createStatement();
+                resSet = statement.executeQuery(sqlString);
+                return resSet;
+            }
+            else {
+                return null;
+            }
         }
         catch (SQLException e) {
             ErrorHandler.fatal("Could not execute SQL statement", e.getStackTrace());

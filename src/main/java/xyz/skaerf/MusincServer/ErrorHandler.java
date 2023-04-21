@@ -25,7 +25,8 @@ public class ErrorHandler {
                     writer.close();
                     System.out.println("Error output has been saved to "+logFile.getName());
                 }
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 System.out.println("Could not create log file. Turning off log file creation for the remaining run duration, will try again upon restart.");
                 logDir = false;
             }
@@ -49,7 +50,8 @@ public class ErrorHandler {
                     writer.close();
                     System.out.println("Error output has been saved to "+logFile.getName());
                 }
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 System.out.println("Could not create log file. Turning off log file creation for the remaining run duration, will try again upon restart.");
                 logDir = false;
             }
@@ -57,7 +59,7 @@ public class ErrorHandler {
     }
     public static void warn(String errorMessage) {
         errorMessage = "[WARN] "+errorMessage;
-        errorMessage = "\n\n\n"+errorMessage+".\n\n\n";
+        errorMessage = errorMessage+".";
         System.out.println(errorMessage);
     }
 

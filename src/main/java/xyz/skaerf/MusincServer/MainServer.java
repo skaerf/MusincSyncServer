@@ -22,11 +22,11 @@ public class MainServer {
 
     private void startServer() {
         System.out.println("Socket server started successfully on port "+port);
-        System.out.println(Main.getIP()+":"+port);
+        System.out.println("Hosted from "+Main.country+" at "+Main.publicIP+":"+port);
         try {
             while (!serSoc.isClosed()) {
                 Socket socket = serSoc.accept();
-                System.out.println("Client attempting to connect on "+socket.getInetAddress());
+                System.out.println("Client attempting to connect on "+socket.getInetAddress().getHostAddress());
                 ClientHandler clientHandler = new ClientHandler(socket);
                 Thread thread = new Thread(clientHandler);
                 thread.start();

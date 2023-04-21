@@ -1,5 +1,6 @@
 package xyz.skaerf.MusincServer;
 
+import xyz.skaerf.MusincServer.APIs.Users.DeezerUser;
 import xyz.skaerf.MusincServer.APIs.Users.SpotifyUser;
 
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ public class Account {
     private Session currentSession;
     private final ArrayList<String> knownIPs;
     private SpotifyUser spotify;
+    private DeezerUser deezer;
 
 
     public Account(String username, String email, String firstname, String surname, Session currentSession, ArrayList<String> knownIPs) {
@@ -64,8 +66,16 @@ public class Account {
         spotify = new SpotifyUser(this);
     }
 
+    public void createDeezerUser() {
+        deezer = new DeezerUser(this);
+    }
+
     public SpotifyUser getSpotifyUser() {
         return spotify;
+    }
+
+    public DeezerUser getDeezerUser() {
+        return deezer;
     }
 
 

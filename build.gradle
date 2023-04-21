@@ -13,9 +13,10 @@ repositories {
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.0'
-    runtimeOnly "mysql:mysql-connector-java:8.0.30"
+    runtimeOnly 'mysql:mysql-connector-java:8.0.32'
     shadow 'junit:junit:3.8.2'
-    implementation 'se.michaelthelin.spotify:spotify-web-api-java:7.3.0'
+    implementation 'se.michaelthelin.spotify:spotify-web-api-java:8.0.0'
+    implementation 'com.googlecode.json-simple:json-simple:1.1.1'
 }
 
 test {

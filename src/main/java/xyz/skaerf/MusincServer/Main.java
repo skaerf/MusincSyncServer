@@ -20,11 +20,13 @@ public class Main {
     public static List<ClientHandler> activeClients = new ArrayList<>();
     static File configFile;
     static String localIP;
+    static String publicIP;
+    static String country;
     static HttpServer httpServer;
     static MainServer server;
     static int port;
     static File logFolder;
-    static Account defaultAccount = null;
+    static Object defaultAccount;
 
     public static void main(String[] args) {
         System.out.println("Initialising MusincSyncServer");
@@ -34,13 +36,15 @@ public class Main {
         createConfigFile();
         MySQLInterface.connectDatabase();
         Spotify.initialiseAPILink();
+        getLocCredentials();
 
         defaultAccount = AccountManager.createNew(new Account("skaerf","seitna@outlook.com","Lawrence","Harrison",null, null));
-        assert defaultAccount != null;
-        defaultAccount.createSpotifyUser();
-        defaultAccount.createSession();
-        String[] uris = {"spotify:track:2IPKXJWPjC5AdDtOxTDkqA","spotify:track:45ewhNby8MgyWw6HmT7HKJ", "spotify:track:4ESWJepzBtY2lR9oZDYVaP"};
+        //defaultAccount.createSpotifyUser();
+        //defaultAccount.createSession();
+        //String[] uris = {"spotify:track:2IPKXJWPjC5AdDtOxTDkqA","spotify:track:45ewhNby8MgyWw6HmT7HKJ", "spotify:track:4ESWJepzBtY2lR9oZDYVaP"};
         //defaultAccount.getSpotifyUser().addToPlaylist(defaultAccount.getSpotifyUser().createPlaylist("hell yeah").getId(), uris);
+        //defaultAccount.createDeezerUser();
+
 
         port = Integer.parseInt(configValues.get("port"));
         if (configValues.get("webserver").equalsIgnoreCase("true")) {
@@ -118,7 +122,7 @@ public class Main {
             httpServer.setExecutor(null);
             httpServer.start();
             localIP = Inet4Address.getLocalHost().getHostAddress();
-            System.out.println("http://"+getIP()+":"+port);
+            System.out.println("http://"+ publicIP+":"+port);
         }
         catch (IOException e) {
             ErrorHandler.fatal("Could not start web server", e.getStackTrace());
@@ -136,26 +140,28 @@ public class Main {
             httpServer.stop(0);
         }
         else if (configValues.get("webserver").equalsIgnoreCase("false")) {
-            server.closeServer();
+            if (!(server == null)) {
+                server.closeServer();
+            }
         }
         System.exit(exitInt);
     }
 
-    public static String getIP() {
+    public static void getLocCredentials() {
         try {
             URLConnection con = new URL("https://api.myip.com").openConnection();
             InputStream response = con.getInputStream();
             String responseBody;
             try (Scanner scanner = new Scanner(response)) {
                 responseBody = scanner.useDelimiter("\\A").next();
-                System.out.println(responseBody);
             }
-            return responseBody.split(",")[0].split(":")[1].replace('"', ' ').trim();
+            publicIP = responseBody.split(",")[0].split(":")[1].replace('"', ' ').trim();
+            String result = responseBody.split(",")[1].split(":")[1];
+            country = result.substring(1, result.length()-1);
         }
         catch (IOException e) {
             ErrorHandler.warn("Could not resolve IP API", e.getStackTrace());
         }
-        return null;
     }
 
     public static void parseQuery(String query, HashMap<String, Object> parameters) {

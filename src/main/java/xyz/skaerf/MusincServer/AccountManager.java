@@ -17,17 +17,27 @@ public class AccountManager {
     Returns account if account was created successfully, null if was not created.
     Only time it would not be created would be if there are preexisting accounts with similar credentials.
      */
-    public static Account createNew(Account account) {
+    public static Object createNew(Account account) {
         ResultSet usernameResult = MySQLInterface.executeStatement("select username from users where username = '{0}'".replace("{0}", account.getUsername()));
         try {
-            if (usernameResult.next()) {
-                System.out.print("returning null user");
-                return null;
+            if (usernameResult != null) {
+                if (usernameResult.next()) {
+                    System.out.print("returning null user");
+                    return "username";
+                }
+                ResultSet emailResult = MySQLInterface.executeStatement("select email from users where email = '{0}'".replace("{0}", account.getEmail()));
+                if (emailResult != null) {
+                    if (emailResult.next()) {
+                        System.out.print("returning null email");
+                        return "email";
+                    }
+                }
+                else {
+                    ErrorHandler.warn("emailResult was null, this typically means SQL connection does not exist");
+                }
             }
-            ResultSet emailResult = MySQLInterface.executeStatement("select email from users where email = '{0}'".replace("{0}", account.getEmail()));
-            if (emailResult.next()) {
-                System.out.print("returning null email");
-                return null;
+            else {
+                ErrorHandler.warn("usernameResult was null, this typically means SQL connection does not exist");
             }
         }
         catch (SQLException e) {
@@ -46,10 +56,8 @@ public class AccountManager {
      */
     public static Account getAccount(String username) {
         if (MySQLInterface.isConnected) {
-            System.out.println("yes");
             HashMap<String, String> userInfo = new HashMap<>();
             for (Account account : accountCache) {
-                System.out.println(account.getUsername());
                 if (account.getUsername().equalsIgnoreCase(username)) {
                     return account;
                 }
@@ -64,6 +72,7 @@ public class AccountManager {
                         }
                     }
                 }
+                userInfo.putIfAbsent("knownIPs", "localhost");
                 Account account = new Account(userInfo.get("username"), userInfo.get("email"), userInfo.get("firstname"), userInfo.get("surname"), null, new ArrayList<>(Arrays.asList(userInfo.get("knownIPs").split(":"))));
                 accountCache.add(account);
                 return account;
@@ -90,12 +99,15 @@ public class AccountManager {
         else {
             ErrorHandler.warn("cannot check database for accounts, only live cache. account may still exist even if it does not get returned");
             for (Account account : accountCache) {
-                System.out.println(account.getUsername());
                 if (account.getUsername().equalsIgnoreCase(username)) {
                     return account;
                 }
             }
         }
         return null;
+    }
+
+    public static void removeFromCache(Account account) {
+        accountCache.remove(account);
     }
 }
