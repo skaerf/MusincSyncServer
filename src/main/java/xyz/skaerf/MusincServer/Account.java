@@ -3,6 +3,7 @@ package xyz.skaerf.MusincServer;
 import xyz.skaerf.MusincServer.APIs.Users.DeezerUser;
 import xyz.skaerf.MusincServer.APIs.Users.SpotifyUser;
 
+import java.net.URI;
 import java.util.ArrayList;
 
 public class Account {
@@ -62,8 +63,9 @@ public class Account {
         this.currentSession = new Session(this);
     }
 
-    public void createSpotifyUser() {
+    public URI createSpotifyUser() {
         spotify = new SpotifyUser(this);
+        return spotify.getUserURI();
     }
 
     public void createDeezerUser() {

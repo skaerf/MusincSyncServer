@@ -15,7 +15,8 @@ public class Spotify {
     private static SpotifyApi api;
     private static final String clientID = "e31b70f90fe746a79c945f48a10b7dda";
     private static final String clientSecret = "d75a335cbe0d4e7fbc75ddb934c90eac";
-    public static URI redirectUri = SpotifyHttpManager.makeUri("http://musinc.me:1905/callb");
+    private static String accessToken = "";
+    public static URI redirectUri = SpotifyHttpManager.makeUri("http://127.0.0.1:8080/scallb");
 
     public static void initialiseAPILink() {
         api = new SpotifyApi.Builder()
@@ -38,7 +39,8 @@ public class Spotify {
     public static void requestClientCredentials() {
         try {
             final ClientCredentials credentials = api.clientCredentials().build().execute();
-            api.setAccessToken(credentials.getAccessToken());
+            accessToken = credentials.getAccessToken();
+            api.setAccessToken(accessToken);
             System.out.println("Client credentials expire in "+credentials.getExpiresIn());
         }
         catch (IOException | ParseException | SpotifyWebApiException e) {
@@ -48,5 +50,9 @@ public class Spotify {
 
     public static URI requestURI() {
         return api.authorizationCodeUri().scope("user-read-currently-playing,playlist-modify-public,playlist-modify-private,user-read-playback-position,user-library-read,user-modify-playback-state,").build().execute();
+    }
+
+    public static String getAccessToken() {
+        return accessToken;
     }
 }

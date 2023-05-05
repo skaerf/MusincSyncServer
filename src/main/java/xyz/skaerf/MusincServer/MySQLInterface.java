@@ -36,7 +36,13 @@ public class MySQLInterface {
             }
         }
         catch (SQLException e) {
-            ErrorHandler.fatal("Could not execute SQL statement", e.getStackTrace());
+            connectDatabase();
+            if (isConnected) {
+                executeStatement(sqlString);
+            }
+            else {
+                ErrorHandler.fatal("Could not execute SQL statement", e.getStackTrace());
+            }
             return null;
         }
     }

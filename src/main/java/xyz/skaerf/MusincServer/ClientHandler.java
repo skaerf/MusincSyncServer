@@ -1,14 +1,17 @@
 package xyz.skaerf.MusincServer;
 
+import se.michaelthelin.spotify.model_objects.specification.Track;
+
 import java.io.*;
 import java.net.Socket;
+import java.net.URI;
 import java.util.regex.PatternSyntaxException;
 
 public class ClientHandler implements Runnable {
 
     private Socket socket;
-    private BufferedReader buffReader;
-    private PrintWriter buffWriter;
+    public BufferedReader buffReader;
+    public PrintWriter buffWriter;
     private Account userAccount;
 
     public ClientHandler(Socket socket) {
@@ -87,6 +90,44 @@ public class ClientHandler implements Runnable {
         while (socket.isConnected()) {
             try {
                 msgFromClient = this.buffReader.readLine();
+                if (msgFromClient != null && !msgFromClient.equals("")) {
+                    String arg = msgFromClient.split(";")[0]+";";
+                    String[] data;
+                    if (!msgFromClient.equalsIgnoreCase(arg)) {
+                        data = msgFromClient.split(";")[1].split(":!:");
+                    }
+                    if (arg.equalsIgnoreCase(RequestArgs.CREATE_SPOTIFY_ACCOUNT)) {
+                        URI uri = userAccount.createSpotifyUser(); // this should return the log in link. add in SpotifyUser a 'confirm' function where the response can be pasted
+                        this.buffWriter.println(RequestArgs.ACCEPTED+uri);
+
+                        msgFromClient = this.buffReader.readLine(); // wait for response
+                        arg = msgFromClient.split(";")[0]+";";
+                        data = msgFromClient.split(";")[1].split(":!:");
+                        if (!arg.equalsIgnoreCase(RequestArgs.GENERAL)) {
+                            System.out.println("Client is not correctly formatting requests to server. Closing connection");
+                            this.closeConnection();
+                        }
+                        if (userAccount.getSpotifyUser().confirm(data[0])) {
+                            String alCov = userAccount.getSpotifyUser().getCurrentAlbumCover();
+                            if (alCov != null) {
+                                this.buffWriter.println(RequestArgs.ACCEPTED+alCov);
+                            }
+                            else {
+                                this.buffWriter.println(RequestArgs.DENIED);
+                            }
+                        }
+                        else {
+                            this.buffWriter.println(RequestArgs.DENIED);
+                        }
+                    }
+                    if (arg.equalsIgnoreCase(RequestArgs.UPDATE_PLAYING)) {
+                        try {
+                            Track currentTrack = userAccount.getSpotifyUser().getCurrentlyPlaying();
+                            this.buffWriter.println(RequestArgs.ACCEPTED + userAccount.getSpotifyUser().getCurrentAlbumCover() + ":!:" + currentTrack.getName() + ":!:" + currentTrack.getArtists()[0].getName());
+                        }
+                        catch (NullPointerException ignored) {}
+                    }
+                }
             }
             catch (IOException e) {
                 ErrorHandler.warn("Client at "+socket.getInetAddress().getHostAddress()+" ("+userAccount.getUsername()+") dropped connection");
