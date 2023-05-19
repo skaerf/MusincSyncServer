@@ -28,6 +28,10 @@ public class Main {
     static File logFolder;
     static Object defaultAccount;
 
+    /**
+     * Main method. Run when the jar is started
+     * @param args args provided by the JVM
+     */
     public static void main(String[] args) {
         System.out.println("Initialising MusincSyncServer");
         configFile = new File("config.txt");
@@ -63,6 +67,9 @@ public class Main {
         }
     }
 
+    /**
+     * Creates the 'logs' folder that fatal and warn errors are contained in, if it does not exist already
+     */
     private static void createLogFolder() {
         if (!logFolder.exists()) {
             if (logFolder.mkdir()) {
@@ -79,6 +86,9 @@ public class Main {
         }
     }
 
+    /**
+     * Creates the config file if it does not exist already.
+     */
     private static void createConfigFile() {
         if (!configFile.exists()) {
             try {
@@ -111,6 +121,11 @@ public class Main {
         }
     }
 
+    /**
+     * Initialises the web server.
+     * Mostly disused as the main client connections will not function without a SocketServer being instantiated.
+     * @param port the port that the web server is to be started on
+     */
     public static void initialiseServer(int port) {
         try {
             httpServer = HttpServer.create(new InetSocketAddress(port), 0);
@@ -130,10 +145,19 @@ public class Main {
 
     }
 
+    /**
+     * Initialises the SocketServer using MainServer's instantiation method.
+     * @param port the port that the SocketServer is to be started on
+     */
     public static void initialiseServerSocket(int port) {
         server = new MainServer(port);
     }
 
+    /**
+     * Ends the main process of the server with an exit integer to show error.
+     * Closes SocketServer and web server, if either are active.
+     * @param exitInt error integer to be used as exit reason
+     */
     public static void endProcess(int exitInt) {
         System.out.println("Ending process");
         if (configValues.get("webserver").equalsIgnoreCase("true")) {
@@ -147,6 +171,11 @@ public class Main {
         System.exit(exitInt);
     }
 
+    /**
+     * Gets the credentials of the server's physical location - the IP address
+     * and the country in which it is being hosted.
+     * Saves to variables to be used elsewhere and to prevent being called multiple times.
+     */
     public static void getLocCredentials() {
         try {
             URLConnection con = new URL("https://api.myip.com").openConnection();
@@ -164,6 +193,13 @@ public class Main {
         }
     }
 
+    /**
+     * Parses a query for the web server.
+     * Mostly disused as the web server itself is not used for much in the program
+     * as the client programs cannot function without SocketServer running.
+     * @param query the query to be parsed
+     * @param parameters any parameters that come with the query
+     */
     public static void parseQuery(String query, HashMap<String, Object> parameters) {
         if (query != null) {
             String[] pairs = query.split("&");

@@ -9,6 +9,11 @@ public class MainServer {
     private ServerSocket serSoc;
     private final int port;
 
+    /**
+    Instantiates a new MainServer with the given port.
+    Runs on main thread as it is the main process of the server.
+     @param port port that the MainServer will run on
+     */
     public MainServer(int port) {
         this.port = port;
         try {
@@ -20,6 +25,10 @@ public class MainServer {
         }
     }
 
+    /**
+    Starts MainServer's SocketServer to begin listening for connections
+    from clients.
+     */
     private void startServer() {
         System.out.println("Socket server started successfully on port "+port);
         System.out.println("Hosted from "+Main.country+" at "+Main.publicIP+":"+port);
@@ -37,6 +46,9 @@ public class MainServer {
         }
     }
 
+    /**
+    Closes the MainServer's SocketServer process.
+     */
     public void closeServer() {
         try {
             if (serSoc != null) {

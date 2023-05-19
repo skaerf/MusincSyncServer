@@ -15,6 +15,12 @@ import java.util.HashMap;
 
 public class HTTPCreateAccountHandler implements HttpHandler {
 
+    /**
+     * Handles the creation of Account instances over the web server.
+     * @param he the exchange containing the request from the
+     *                 client and used to send the response
+     * @throws IOException if request cannot be handled
+     */
     @Override
     public void handle(HttpExchange he) throws IOException {
         HashMap<String, Object> parameters = new HashMap<>();

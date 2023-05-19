@@ -8,6 +8,12 @@ import java.io.OutputStream;
 
 public class RootHandler implements HttpHandler {
 
+    /**
+     * Handles Root requests for the web server.
+     * @param he the exchange containing the request from the
+     *                 client and used to send the response
+     * @throws IOException if request cannot be handled
+     */
     @Override
     public void handle(HttpExchange he) throws IOException {
         System.out.println("Root request received from "+he.getRemoteAddress()+" for "+he.getRequestURI());

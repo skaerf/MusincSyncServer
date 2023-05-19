@@ -10,12 +10,14 @@ public class AccountManager {
 
     private static final ArrayList<Account> accountCache = new ArrayList<>();
 
-    /*
+    /**
     This exists because if an account is created with nothing other than the new xyz.skaerf.MusincServer.Account() method there may
     potentially be another account that exists with some of the same credentials.
     This method is designed to prevent that and therefore is required.
     Returns account if account was created successfully, null if was not created.
     Only time it would not be created would be if there are preexisting accounts with similar credentials.
+     @return Object - instanceof Account if succeeded, instanceof String with reason for failure if failed
+     @param account the Account instance that should be created
      */
     public static Object createNew(Account account) {
         ResultSet usernameResult = MySQLInterface.executeStatement("select username from users where username = '{0}'".replace("{0}", account.getUsername()));
@@ -47,12 +49,18 @@ public class AccountManager {
         return account;
     }
 
+    /**
+     * Resets the given user's password
+     * @param account the Account instance to have its password reset
+     */
     public static void resetPassword(Account account) {
         // TODO add encryption system and passwords to accounts - maybe kept in a separate database for reasons of security?
     }
 
-    /*
-    Returns null if an account cannot be found under that username (or email if given string does not equal a username)
+    /**
+     * Gets the Account linked to a username or email
+     * @return Account of username if found, null if not
+     * @param username either the username or email (to allow logging in with either) of the Account to be found
      */
     public static Account getAccount(String username) {
         if (MySQLInterface.isConnected) {
@@ -107,6 +115,10 @@ public class AccountManager {
         return null;
     }
 
+    /**
+     * Removes the given account from the server's Account cache
+     * @param account account to be removed from the cache
+     */
     public static void removeFromCache(Account account) {
         accountCache.remove(account);
     }

@@ -14,6 +14,13 @@ public class ClientHandler implements Runnable {
     public PrintWriter buffWriter;
     private Account userAccount;
 
+    /**
+    Instantiates a new ClientHandler with the socket that was created for it.
+     Only used by MainServer to allow the server's main thread to create child
+     threads, allowing more than one connection simultaneously.
+     Only instantiated in a new thread for this reason.
+     @param socket the socket that the client is connected to
+     */
     public ClientHandler(Socket socket) {
         try {
             this.socket = socket;
@@ -65,6 +72,11 @@ public class ClientHandler implements Runnable {
         }
     }
 
+    /**
+    Closes the active connection with the client and removes itself from AccountManager's account cache
+    as well as removing itself as an active client.
+    Throws an error to ErrorHandler if it fails to complete any of this.
+     */
     public void closeConnection() {
         Main.activeClients.remove(this);
         AccountManager.removeFromCache(userAccount);
@@ -84,6 +96,10 @@ public class ClientHandler implements Runnable {
         }
     }
 
+    /**
+    Runnable that the instantiated thread uses to indefinitely listen for requests from the client
+    until the connection is closed by either the server or the client.
+     */
     @Override
     public void run() {
         String msgFromClient;
@@ -123,24 +139,47 @@ public class ClientHandler implements Runnable {
                     if (arg.equalsIgnoreCase(RequestArgs.UPDATE_PLAYING)) {
                         try {
                             Track currentTrack = userAccount.getSpotifyUser().getCurrentlyPlaying();
-                            this.buffWriter.println(RequestArgs.ACCEPTED + userAccount.getSpotifyUser().getCurrentAlbumCover() + ":!:" + currentTrack.getName() + ":!:" + currentTrack.getArtists()[0].getName());
+                            String albumCover = userAccount.getSpotifyUser().getCurrentAlbumCover();
+                            String trackName = currentTrack.getName();
+                            String artist = currentTrack.getArtists()[0].getName();
+                            if (albumCover == null) {
+                                this.buffWriter.println(RequestArgs.DENIED+"couldNotGrab");
+                            }
+                            else {
+                                this.buffWriter.println(RequestArgs.ACCEPTED + albumCover + ":!:" + trackName + ":!:" + artist);
+                            }
                         }
                         catch (NullPointerException ignored) {}
                     }
                 }
             }
             catch (IOException e) {
-                ErrorHandler.warn("Client at "+socket.getInetAddress().getHostAddress()+" ("+userAccount.getUsername()+") dropped connection");
+                if (userAccount != null) {
+                    ErrorHandler.warn("Client at "+socket.getInetAddress().getHostAddress()+" ("+userAccount.getUsername()+") dropped connection");
+                }
+                else {
+                    ErrorHandler.warn("Client at "+socket.getInetAddress().getHostAddress()+" (null) dropped connection");
+                }
                 this.closeConnection();
                 break;
             }
         }
     }
 
+    /**
+    Grabs the Account that is linked to this ClientHandler.
+    @return Account of active client
+     */
     private Account getAccount() {
         return this.userAccount;
     }
 
+    /**
+    Formats a response for the client to receive.
+    Just simplifies my strings to prevent me from having to add the +"\n"; to everything.
+     @param var string to be formatted
+    @return Given response string with correct transmission formatting.
+     */
     private String format(String var) {
         return var+"\n";
     }

@@ -8,6 +8,11 @@ public class ErrorHandler {
 
     static boolean logDir;
 
+    /**
+     * Creates a fatal error with a message to be printed to console + stack trace to be saved as a file in the 'logs' directory.
+     * @param errorMessage the error message to be printed to console, detailing the error
+     * @param stackTrace the stack trace that came with the error that was thrown
+     */
     public static void fatal(String errorMessage, StackTraceElement[] stackTrace) {
         long currTime = System.currentTimeMillis();
         errorMessage = "[FATAL] "+errorMessage;
@@ -33,6 +38,12 @@ public class ErrorHandler {
         }
         Main.endProcess(0);
     }
+
+    /**
+     * Creates a warn error for the given message and stack trace
+     * @param errorMessage the message to be printed to the console, detailing the error
+     * @param stackTrace the stack trace that came with the error that was thrown
+     */
     public static void warn(String errorMessage, StackTraceElement[] stackTrace) {
         errorMessage = "[WARN] "+errorMessage;
         errorMessage = "\n\n\n"+errorMessage+".\n\n\n";
@@ -57,6 +68,13 @@ public class ErrorHandler {
             }
         }
     }
+
+    /**
+     * Creates a warn error for the given message. Used in case of no stack trace thrown -
+     * no actual error to save the stack trace of into a file.
+     * Used in a case of warning that has not been created from a method error.
+     * @param errorMessage the message to be printed to console, detailing the error
+     */
     public static void warn(String errorMessage) {
         errorMessage = "[WARN] "+errorMessage;
         errorMessage = errorMessage+".";

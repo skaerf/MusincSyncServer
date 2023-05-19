@@ -2,6 +2,7 @@ package xyz.skaerf.MusincServer.APIs.Users;
 
 import xyz.skaerf.MusincServer.APIs.Deezer;
 import xyz.skaerf.MusincServer.Account;
+import xyz.skaerf.MusincServer.ErrorHandler;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -15,6 +16,10 @@ public class DeezerUser {
     private Account account;
 
 
+    /**
+     * Create a new DeezerUser instance and links it to the given account
+     * @param account account to link the DeezerUser instance to
+     */
     public DeezerUser(Account account) {
         this.account = account;
         HashMap<String,String> data = Deezer.getAccessCode();
@@ -25,16 +30,24 @@ public class DeezerUser {
 
     }
 
+    /**
+     * Sets the information in order to make it easier to pull data quickly without repeatedly
+     * contacting the Deezer API
+     */
     public void setUserInformation() {
         try {
             URL url = new URL("https://api.deezer.com/user/me");
 
         }
         catch (IOException e) {
-            e.printStackTrace();
+            ErrorHandler.warn("Could not perform request to Deezer for user information", e.getStackTrace());
         }
     }
 
+    /**
+     * Creates a Deezer playlist on the user's Deezer account
+     * @param name the name of the playlist to be created
+     */
     public void createPlaylist(String name) {
         try {
             URL url = new URL("https://connect.deezer.com/user/{user_id}/playlists?title={title}");

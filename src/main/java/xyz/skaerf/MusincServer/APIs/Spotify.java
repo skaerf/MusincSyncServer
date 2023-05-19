@@ -18,6 +18,9 @@ public class Spotify {
     private static String accessToken = "";
     public static URI redirectUri = SpotifyHttpManager.makeUri("http://127.0.0.1:8080/scallb");
 
+    /**
+     * Initialises the API link for the server's connection to Spotify.
+     */
     public static void initialiseAPILink() {
         api = new SpotifyApi.Builder()
                 .setClientId(clientID)
@@ -28,6 +31,11 @@ public class Spotify {
         requestClientCredentials();
     }
 
+    /**
+     * Instantiates a new client user under the server's API link for clients to connect
+     * to their Spotify account.
+     * @return SpotifyApi instance created to be added to a SpotifyUser instance
+     */
     public static SpotifyApi instantiateClientUser() {
         return new SpotifyApi.Builder()
                 .setClientId(clientID)
@@ -36,6 +44,9 @@ public class Spotify {
                 .build();
     }
 
+    /**
+     * Requests the credentials from Spotify for server's API connection
+     */
     public static void requestClientCredentials() {
         try {
             final ClientCredentials credentials = api.clientCredentials().build().execute();
@@ -48,10 +59,16 @@ public class Spotify {
         }
     }
 
+    /**
+     * @return the request URI for the server
+     */
     public static URI requestURI() {
         return api.authorizationCodeUri().scope("user-read-currently-playing,playlist-modify-public,playlist-modify-private,user-read-playback-position,user-library-read,user-modify-playback-state,").build().execute();
     }
 
+    /**
+     * @return the server's API instance access token
+     */
     public static String getAccessToken() {
         return accessToken;
     }

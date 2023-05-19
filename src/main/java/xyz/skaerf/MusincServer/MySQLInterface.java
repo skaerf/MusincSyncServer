@@ -10,6 +10,9 @@ public class MySQLInterface {
 
     public static boolean isConnected = true;
 
+    /**
+    Initialises the connection to the MySQL database.
+     */
     public static void connectDatabase() {
         try {
             connection = DriverManager.getConnection("jdbc:mysql://home.skaerf.xyz:2291/usrs", username, password);
@@ -23,6 +26,12 @@ public class MySQLInterface {
         }
     }
 
+
+    /**
+    Executes a given SQL statement, provided in String format.
+    @return the ResultSet that the server provides, null if empty.
+     @param sqlString the SQL statement to be executed
+     */
     public static ResultSet executeStatement(String sqlString) {
         ResultSet resSet;
         try {

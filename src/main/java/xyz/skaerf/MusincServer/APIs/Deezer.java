@@ -21,6 +21,10 @@ public class Deezer {
     static String secret = "58d59ca75fd31f26b199a9ae2015eba0";
     static String redirectURI = "https://musinc.me/dcallb";
 
+    /**
+     * Gets the Deezer access code for a user to be added
+     * @return a HashMap<String, String> containing the access token data of the Deezer user
+     */
     public static HashMap<String, String> getAccessCode() {
         try {
             URL obj = new URL("https://connect.deezer.com/oauth/auth.php?app_id={0}&redirect_uri={1}&perms=basic_access,email,offline_access,manage_library".replace("{0}", appID).replace("{1}", redirectURI));
@@ -33,6 +37,11 @@ public class Deezer {
         return null;
     }
 
+    /**
+     * Requests an access token for a Deezer user based on the provided access code
+     * @param code access code to be used to grab access tokens
+     * @return a HashMap<String, String> containing the access token data of the Deezer user after authentication
+     */
     private static HashMap<String, String> requestAccessToken(String code) {
         Map<String, String> params = new HashMap<>();
         params.put("app_id", appID);
@@ -74,6 +83,11 @@ public class Deezer {
         return null;
     }
 
+    /**
+     * Makes a GET request to Deezer with the given request information
+     * @param requestInfo information for request
+     * @return String containing the response from Deezer
+     */
     public static String makeRequest(String requestInfo) {
         try {
             URL url = new URL(redirectURI);
