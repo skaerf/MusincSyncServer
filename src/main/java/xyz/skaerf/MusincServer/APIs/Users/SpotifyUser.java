@@ -31,6 +31,8 @@ public class SpotifyUser {
     private final URI userURI;
 
     private String currentID;
+    private long progressMS;
+    private long timeOfCall;
 
     /**
     Instantiates a new SpotifyUser for a user - allows a Spotify account to be connected
@@ -117,6 +119,8 @@ public class SpotifyUser {
                 }
                 assert track != null;
                 this.currentID = System.currentTimeMillis()+":"+track.getId();
+                this.timeOfCall = curPlay.getTimestamp();
+                this.progressMS = curPlay.getProgress_ms();
                 return track;
             }
             else {
@@ -135,6 +139,8 @@ public class SpotifyUser {
                 }
                 assert track != null;
                 this.currentID = System.currentTimeMillis()+":"+track.getId();
+                this.timeOfCall = curPlay.getTimestamp();
+                this.progressMS = curPlay.getProgress_ms();
                 return track;
             }
         }
@@ -149,9 +155,20 @@ public class SpotifyUser {
     }
 
     /**
+     * Gets the progress in MS for the song that is currently playing. Must be called immediately after getCurrentlyPlaying() or
+     * it will not contain the most recently updated timestamp.
+     * Uses the time that currentlyPlaying was called to Spotify plus the current time and the provided progress time.
+     * @return the progress in MS for the currently playing song
+     */
+    public long getSongProgress() {
+        long difference = System.currentTimeMillis()-this.timeOfCall;
+        return this.progressMS+difference;
+    }
+
+    /**
     getCurrentlyPlaying() MUST be called first. This is purely for rate limiting reasons - ends up being way too many requests
     otherwise and results in program being inoperable.
-    @return the String (in form of a URL) for the user's currently playing song's album cover. Used for display on client.
+    @return the URL (in form of a String) for the user's currently playing song's album cover. Used for display on client.
      */
     public String getCurrentAlbumCover() {
         // the single reason this does not conform to everything else is because the API I am using does not allow me to grab album covers

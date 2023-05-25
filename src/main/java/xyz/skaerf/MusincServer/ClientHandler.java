@@ -79,7 +79,6 @@ public class ClientHandler implements Runnable {
      */
     public void closeConnection() {
         Main.activeClients.remove(this);
-        AccountManager.removeFromCache(userAccount);
         try {
             if (this.buffReader != null) {
                 this.buffReader.close();
@@ -140,13 +139,14 @@ public class ClientHandler implements Runnable {
                         try {
                             Track currentTrack = userAccount.getSpotifyUser().getCurrentlyPlaying();
                             String albumCover = userAccount.getSpotifyUser().getCurrentAlbumCover();
+                            long timestamp = userAccount.getSpotifyUser().getSongProgress();
                             String trackName = currentTrack.getName();
                             String artist = currentTrack.getArtists()[0].getName();
                             if (albumCover == null) {
                                 this.buffWriter.println(RequestArgs.DENIED+"couldNotGrab");
                             }
                             else {
-                                this.buffWriter.println(RequestArgs.ACCEPTED + albumCover + ":!:" + trackName + ":!:" + artist);
+                                this.buffWriter.println(RequestArgs.ACCEPTED + albumCover + ":!:" + trackName + ":!:" + artist + ":!:" + timestamp);
                             }
                         }
                         catch (NullPointerException ignored) {}
