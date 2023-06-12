@@ -50,14 +50,6 @@ public class AccountManager {
     }
 
     /**
-     * Resets the given user's password
-     * @param account the Account instance to have its password reset
-     */
-    public static void resetPassword(Account account) {
-        // TODO add encryption system and passwords to accounts - maybe kept in a separate database for reasons of security?
-    }
-
-    /**
      * Gets the Account linked to a username or email
      * @return Account of username if found, null if not
      * @param username either the username or email (to allow logging in with either) of the Account to be found
