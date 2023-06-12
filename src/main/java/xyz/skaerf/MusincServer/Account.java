@@ -38,7 +38,8 @@ public class Account {
     }
 
     /**
-     *
+     * Creates a doubly-hashed password for the user. Hashes with a salt for extra security.
+     * @param hashedPass the pre-hashed password sent by the client
      */
     public void createPassword(String hashedPass) {
         String salt = PassManager.generateSalt();

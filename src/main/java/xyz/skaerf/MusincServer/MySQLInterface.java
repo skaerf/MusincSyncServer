@@ -53,6 +53,12 @@ public class MySQLInterface {
         return null;
     }
 
+    /**
+     * Executes the provided SQL statement.
+     * Very similar to executeStatement(), however it does not return a ResultSet.
+     * Purely for statements that do not return data, such as inserting into tables or deletion.
+     * @param sqlString the SQL update string to be executed
+     */
     public static void executeUpdate(String sqlString) {
         try {
             if (connection.isValid(50)) {

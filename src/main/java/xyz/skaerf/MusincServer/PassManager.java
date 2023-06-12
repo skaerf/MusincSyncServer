@@ -88,6 +88,11 @@ public class PassManager {
         // TODO add encryption system and passwords to accounts - maybe kept in a separate database for reasons of security?
     }
 
+    /**
+     * Generates a salt for a hash. All it does is make a random string of numbers and letters.
+     * For whatever reason, cryptography calls that a salt.
+     * @return the salt that was generated
+     */
     public static String generateSalt() {
         SecureRandom secureRandom = new SecureRandom();
         byte[] salt = new byte[16];

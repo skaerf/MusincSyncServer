@@ -137,6 +137,12 @@ public class ClientHandler implements Runnable {
         }
     }
 
+    /**
+     * Generates a keepalive key for a client. Keepalives are formatted as the time at generation in milliseconds with a random
+     * string of letters at the end. I've used the PassManager.generateSalt() method for this as there's no point creating
+     * two separate string randomizers.
+     * @return the keepalive that was generated
+     */
     private String generateKeepalive() {
         ResultSet userIDs = MySQLInterface.executeStatement("select userid from users where username = '"+userAccount.getUsername()+"'");
         int userid = 0;
