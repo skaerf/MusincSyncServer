@@ -76,6 +76,16 @@ public class Account {
     }
 
     /**
+     * Checks if the given password is the correct password for the user's account.
+     * @param password the password that the user has provided
+     * @return false if password is incorrect, otherwise true
+     */
+    public boolean checkPassword(String password) {
+        PassManager pMan = new PassManager();
+        return pMan.checkPass(this, password);
+    }
+
+    /**
      * Gets the current Session that the user is in, if any
      * @return current Session if in one, otherwise null
      */
