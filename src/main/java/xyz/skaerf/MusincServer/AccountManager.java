@@ -57,8 +57,8 @@ public class AccountManager {
     public static Account getAccount(String username) {
         if (MySQLInterface.isConnected) {
             HashMap<String, String> userInfo = new HashMap<>();
-            for (Account account : accountCache) {
-                if (account.getUsername().equalsIgnoreCase(username)) {
+            if (accountCache.size() != 0) for (Account account : accountCache) {
+                if (account.getUsername() != null && account.getUsername().equalsIgnoreCase(username)) {
                     return account;
                 }
             }

@@ -5,6 +5,8 @@ import se.michaelthelin.spotify.model_objects.specification.Track;
 import java.io.*;
 import java.net.Socket;
 import java.net.URI;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.regex.PatternSyntaxException;
 
 public class ClientHandler implements Runnable {
@@ -28,21 +30,85 @@ public class ClientHandler implements Runnable {
             this.buffReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             String read = this.buffReader.readLine();
             String arg = "";
-            String data = "";
+            String[] data = new String[]{};
             try {
                 arg = read.split(";")[0]+";";
-                data = read.split(";")[1];
+                data = read.split(";")[1].split(":!:");
             }
             catch (PatternSyntaxException e) {
-                System.out.println("Client is not correctly formatting requests to server. Closing connection");
+                ErrorHandler.warn("Client is not correctly formatting requests to server. Closing connection");
                 this.closeConnection();
             }
-            if (arg.equalsIgnoreCase(RequestArgs.LOG_IN)) {
-                userAccount = AccountManager.getAccount(data);
+            if (arg.equalsIgnoreCase(RequestArgs.KEEPALIVE)) {
+                // client has submitted a keepalive rather than a username
+                long time = Long.parseLong(data[0].split(":")[0]);
+                long elapsed = System.currentTimeMillis()-time;
+                if (elapsed >= (86400000L * 30)) { // 30 day keepalive limit
+                    System.out.println("User submitted a keepalive, but it was expired. Has been removed from database");
+                    MySQLInterface.executeUpdate("delete from keepalives where keepalive = '"+data[0]+"'");
+                    this.buffWriter.println(RequestArgs.DENIED);
+                    this.closeConnection();
+                }
+                ResultSet keepaliveTable = MySQLInterface.executeStatement("select userid from keepalives where keepalive = '"+data[0]+"'");
+                if (keepaliveTable == null) {
+                    System.out.println("No records with provided keepalive were found");
+                    this.buffWriter.println(RequestArgs.DENIED);
+                    this.closeConnection();
+                }
+                int userid = 0;
+                try {
+                    if (keepaliveTable != null) while (keepaliveTable.next()) {
+                        userid = keepaliveTable.getInt("userid");
+                    }
+                }
+                catch (SQLException e) {
+                    ErrorHandler.warn("Unable to iterate over provided keepalive data from SQL database. Denying access", e.getStackTrace());
+                    this.buffWriter.println(RequestArgs.DENIED);
+                    this.closeConnection();
+                }
+                ResultSet users = MySQLInterface.executeStatement("select username from users where userid = '"+userid+"'");
+                String username = "";
+                try {
+                    if (users != null) while (users.next()) {
+                        username = users.getString("username");
+                    }
+                }
+                catch (SQLException e) {
+                    ErrorHandler.warn("Could not iterate through provided user data from SQL. Denying user access", e.getStackTrace());
+                    this.buffWriter.println(RequestArgs.DENIED);
+                    this.closeConnection();
+                }
+                userAccount = AccountManager.getAccount(username);
                 if (userAccount != null && userAccount.getUsername() != null) {
-                    this.buffWriter.println(RequestArgs.ACCEPTED+ userAccount.getUsername()+":!:"+ userAccount.getFirstname()+":!:"+ userAccount.getSurname()+":!:"+userAccount.getEmail()+"\n");
+                    this.buffWriter.println(RequestArgs.ACCEPTED + userAccount.getUsername() + ":!:" + userAccount.getFirstname() + ":!:" + userAccount.getSurname() + ":!:" + userAccount.getEmail() + "\n");
                     Main.activeClients.add(this);
-                    System.out.println(socket.getInetAddress().getHostAddress()+" connected as "+userAccount.getUsername());
+                    System.out.println(socket.getInetAddress().getHostAddress() + " connected as " + userAccount.getUsername() + " using a keepalive");
+                }
+                else {
+                    this.buffWriter.println(format(RequestArgs.DENIED));
+                    this.closeConnection();
+                }
+            }
+            else if (arg.equalsIgnoreCase(RequestArgs.LOG_IN)) {
+                userAccount = AccountManager.getAccount(data[0]); // first split is username, second is password hash
+                if (userAccount != null && userAccount.getUsername() != null) {
+                    try {
+                        final String datum = data[1]; // only reason this is here is to confirm that a password (or something) was provided as a second argument
+                    }
+                    catch (ArrayIndexOutOfBoundsException e) {
+                        ErrorHandler.warn("Client is not correctly formatting requests to server. Closing connection");
+                        this.closeConnection();
+                        return;
+                    }
+                    if (userAccount.checkPassword(data[1])) {
+                        this.buffWriter.println(RequestArgs.ACCEPTED + userAccount.getUsername() + ":!:" + userAccount.getFirstname() + ":!:" + userAccount.getSurname() + ":!:" + userAccount.getEmail() + ":!:" + this.generateKeepalive() + "\n");
+                        Main.activeClients.add(this);
+                        System.out.println(socket.getInetAddress().getHostAddress() + " connected as " + userAccount.getUsername());
+                    }
+                    else {
+                        this.buffWriter.println(format(RequestArgs.DENIED));
+                        this.closeConnection();
+                    }
                 }
                 else {
                     this.buffWriter.println(format(RequestArgs.DENIED));
@@ -50,12 +116,11 @@ public class ClientHandler implements Runnable {
                 }
             }
             else if (arg.equalsIgnoreCase(RequestArgs.CREATE_ACCOUNT)) {
-                String[] dataList = data.split(":!:");
-                if (dataList.length != 3) {
+                if (data.length != 3) {
                     this.buffWriter.println(format(RequestArgs.NOT_ENOUGH_ARGS));
                     this.closeConnection();
                 }
-                Object verify = AccountManager.createNew(userAccount = new Account(dataList[0], dataList[1], dataList[2], dataList[3], null, null));
+                Object verify = AccountManager.createNew(userAccount = new Account(data[0], data[1], data[2], data[3], null, null));
                 if (verify instanceof Account) {
                     this.buffWriter.println(format(RequestArgs.CREATE_ACCOUNT));
                     userAccount = (Account) verify;
@@ -70,6 +135,23 @@ public class ClientHandler implements Runnable {
             ErrorHandler.fatal("Could not instantiate client socket", e.getStackTrace());
             this.closeConnection();
         }
+    }
+
+    private String generateKeepalive() {
+        ResultSet userIDs = MySQLInterface.executeStatement("select userid from users where username = '"+userAccount.getUsername()+"'");
+        int userid = 0;
+        String keepalive = System.currentTimeMillis()+":"+PassManager.generateSalt();
+        try {
+            if (userIDs != null) while (userIDs.next()) {
+                userid = userIDs.getInt("userid");
+            }
+        }
+        catch (SQLException e) {
+            ErrorHandler.warn("Could not iterate through user IDs provided whilst attempting to save keepalive", e.getStackTrace());
+        }
+
+        MySQLInterface.executeUpdate("insert into keepalives (userid, keepalive) values ("+userid+", '"+keepalive+"')");
+        return keepalive;
     }
 
     /**

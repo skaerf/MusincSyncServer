@@ -4,6 +4,8 @@ import xyz.skaerf.MusincServer.APIs.Users.DeezerUser;
 import xyz.skaerf.MusincServer.APIs.Users.SpotifyUser;
 
 import java.net.URI;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class Account {
@@ -36,11 +38,32 @@ public class Account {
     }
 
     /**
+     *
+     */
+    public void createPassword(String hashedPass) {
+        String salt = PassManager.generateSalt();
+        String dHashed = PassManager.getPassHash(salt+hashedPass); // returns re-hashed password with salt incorporated
+        int userID = 0;
+        ResultSet acc = MySQLInterface.executeStatement("select userid from users where username = '"+username+"'");
+        try {
+            if (acc != null) {
+                while (acc.next()) {
+                    userID = acc.getInt("userid");
+                }
+            }
+        }
+        catch (SQLException e) {
+            ErrorHandler.warn("Could not iterate through the SQl server's response for UserID request", e.getStackTrace());
+        }
+        MySQLInterface.executeStatement("insert into passwords (userid, salt, hash) values ("+userID+","+salt+","+dHashed+")");
+    }
+
+    /**
      * Gets the username of the Account
      * @return account username
      */
     public String getUsername() {
-        return username;
+        return this.username;
     }
 
     /**
@@ -48,7 +71,7 @@ public class Account {
      * @return account email
      */
     public String getEmail() {
-        return email;
+        return this.email;
     }
 
     /**
@@ -56,7 +79,7 @@ public class Account {
      * @return first name of account user
      */
     public String getFirstname() {
-        return firstname;
+        return this.firstname;
     }
 
     /**
@@ -64,7 +87,7 @@ public class Account {
      * @return surname of account user
      */
     public String getSurname() {
-        return surname;
+        return this.surname;
     }
 
     /**
@@ -72,7 +95,7 @@ public class Account {
      * @return ArrayList of Strings containing the known IPs
      */
     public ArrayList<String> getKnownIPs() {
-        return knownIPs;
+        return this.knownIPs;
     }
 
     /**
@@ -81,8 +104,7 @@ public class Account {
      * @return false if password is incorrect, otherwise true
      */
     public boolean checkPassword(String password) {
-        PassManager pMan = new PassManager();
-        return pMan.checkPass(this, password);
+        return PassManager.checkPass(this, password);
     }
 
     /**
@@ -90,7 +112,7 @@ public class Account {
      * @return current Session if in one, otherwise null
      */
     public Session getSession() {
-        return currentSession;
+        return this.currentSession;
     }
 
     /**
@@ -120,15 +142,15 @@ public class Account {
      * @return the user URI of the Spotify account
      */
     public URI createSpotifyUser() {
-        spotify = new SpotifyUser(this);
-        return spotify.getUserURI();
+        this.spotify = new SpotifyUser(this);
+        return this.spotify.getUserURI();
     }
 
     /**
      * Creates a new instance of DeezerUser to add the user's Deezer account
      */
     public void createDeezerUser() {
-        deezer = new DeezerUser(this);
+        this.deezer = new DeezerUser(this);
     }
 
     /**
@@ -136,7 +158,7 @@ public class Account {
      * @return SpotifyUser instance, null if none set
      */
     public SpotifyUser getSpotifyUser() {
-        return spotify;
+        return this.spotify;
     }
 
     /**
@@ -144,7 +166,7 @@ public class Account {
      * @return DeezerUser instance, null if none set
      */
     public DeezerUser getDeezerUser() {
-        return deezer;
+        return this.deezer;
     }
 
 

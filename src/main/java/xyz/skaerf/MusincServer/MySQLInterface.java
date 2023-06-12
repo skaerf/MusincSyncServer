@@ -18,6 +18,7 @@ public class MySQLInterface {
             connection = DriverManager.getConnection("jdbc:mysql://home.skaerf.xyz:2291/usrs", username, password);
             if (connection.isValid(50)) {
                 System.out.println("Successfully connected to database");
+                isConnected = true;
             }
         }
         catch (SQLException e) {
@@ -35,24 +36,33 @@ public class MySQLInterface {
     public static ResultSet executeStatement(String sqlString) {
         ResultSet resSet;
         try {
-            if (connection != null) {
+            if (connection.isValid(50)) {
                 Statement statement = connection.createStatement();
                 resSet = statement.executeQuery(sqlString);
                 return resSet;
             }
-            else {
-                return null;
+        }
+        catch (SQLSyntaxErrorException e) {
+            e.printStackTrace();
+            ErrorHandler.warn("User may have attempted to inject SQL", e.getStackTrace());
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+            ErrorHandler.fatal("Could not execute SQL statement", e.getStackTrace());
+        }
+        return null;
+    }
+
+    public static void executeUpdate(String sqlString) {
+        try {
+            if (connection.isValid(50)) {
+                Statement statement = connection.createStatement();
+                statement.executeUpdate(sqlString);
             }
         }
         catch (SQLException e) {
-            connectDatabase();
-            if (isConnected) {
-                executeStatement(sqlString);
-            }
-            else {
-                ErrorHandler.fatal("Could not execute SQL statement", e.getStackTrace());
-            }
-            return null;
+            e.printStackTrace();
+            ErrorHandler.fatal("Could not execute SQL update", e.getStackTrace());
         }
     }
 }
