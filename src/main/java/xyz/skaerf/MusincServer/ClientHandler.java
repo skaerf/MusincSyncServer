@@ -161,9 +161,9 @@ public class ClientHandler implements Runnable {
     }
 
     /**
-    Closes the active connection with the client and removes itself from AccountManager's account cache
-    as well as removing itself as an active client.
-    Throws an error to ErrorHandler if it fails to complete any of this.
+     * Closes the active connection with the client
+     * as well as removing itself as an active client.
+     * Throws an error to ErrorHandler if it fails to complete any of this.
      */
     public void closeConnection() {
         Main.activeClients.remove(this);
