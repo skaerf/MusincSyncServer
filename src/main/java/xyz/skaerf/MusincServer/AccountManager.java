@@ -73,7 +73,7 @@ public class AccountManager {
                     }
                 }
                 userInfo.putIfAbsent("knownIPs", "localhost");
-                Account account = new Account(userInfo.get("username"), userInfo.get("email"), userInfo.get("firstname"), userInfo.get("surname"), null, new ArrayList<>(Arrays.asList(userInfo.get("knownIPs").split(":"))));
+                Account account = new Account(userInfo.get("username"), userInfo.get("email"), userInfo.get("firstname"), userInfo.get("lastname"), null, new ArrayList<>(Arrays.asList(userInfo.get("knownIPs").split(":"))));
                 accountCache.add(account);
                 return account;
             }

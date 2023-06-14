@@ -12,8 +12,8 @@ public class Account {
 
     private final String username;
     private final String email;
-    private final String firstname;
-    private final String surname;
+    private final String firstName;
+    private final String lastName;
     private Session currentSession;
     private final ArrayList<String> knownIPs;
     private SpotifyUser spotify;
@@ -23,16 +23,16 @@ public class Account {
      * Instantiates a new Account with the given credentials
      * @param username the username for the account to be created
      * @param email the email for the account to be created
-     * @param firstname the first name of the user
-     * @param surname the surname of the user
+     * @param firstName the first name of the user
+     * @param lastName the last name of the user
      * @param currentSession the current session that the user is in
      * @param knownIPs the known IP addresses of the user (for session keepalive)
      */
-    public Account(String username, String email, String firstname, String surname, Session currentSession, ArrayList<String> knownIPs) {
+    public Account(String username, String email, String firstName, String lastName, Session currentSession, ArrayList<String> knownIPs) {
         this.username = username;
         this.email = email;
-        this.firstname = firstname;
-        this.surname = surname;
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.currentSession = currentSession;
         this.knownIPs = knownIPs;
     }
@@ -79,16 +79,16 @@ public class Account {
      * Gets the first name set on the Account
      * @return first name of account user
      */
-    public String getFirstname() {
-        return this.firstname;
+    public String getFirstName() {
+        return this.firstName;
     }
 
     /**
-     * Gets the surname set on the Account
-     * @return surname of account user
+     * Gets the last name set on the Account
+     * @return last name of account user
      */
-    public String getSurname() {
-        return this.surname;
+    public String getLastName() {
+        return this.lastName;
     }
 
     /**

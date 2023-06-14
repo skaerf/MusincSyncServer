@@ -84,7 +84,7 @@ public class ClientHandler implements Runnable {
                     }
                     userAccount = AccountManager.getAccount(username);
                     if (userAccount != null && userAccount.getUsername() != null) {
-                        this.buffWriter.println(RequestArgs.ACCEPTED + userAccount.getUsername() + ":!:" + userAccount.getFirstname() + ":!:" + userAccount.getSurname() + ":!:" + userAccount.getEmail() + "\n");
+                        this.buffWriter.println(RequestArgs.ACCEPTED + userAccount.getUsername() + ":!:" + userAccount.getFirstName() + ":!:" + userAccount.getLastName() + ":!:" + userAccount.getEmail() + "\n");
                         Main.activeClients.add(this);
                         System.out.println(socket.getInetAddress().getHostAddress() + " connected as " + userAccount.getUsername() + " using a keepalive");
                     }
@@ -97,7 +97,7 @@ public class ClientHandler implements Runnable {
                     userAccount = AccountManager.getAccount(data[0]); // first split is username, second is password hash
                     if (userAccount != null && userAccount.getUsername() != null) {
                         if (userAccount.checkPassword(data[1])) {
-                            this.buffWriter.println(RequestArgs.ACCEPTED + userAccount.getUsername() + ":!:" + userAccount.getFirstname() + ":!:" + userAccount.getSurname() + ":!:" + userAccount.getEmail() + ":!:" + this.generateKeepalive() + "\n");
+                            this.buffWriter.println(RequestArgs.ACCEPTED + userAccount.getUsername() + ":!:" + userAccount.getFirstName() + ":!:" + userAccount.getLastName() + ":!:" + userAccount.getEmail() + ":!:" + this.generateKeepalive() + "\n");
                             Main.activeClients.add(this);
                             System.out.println(socket.getInetAddress().getHostAddress() + " connected as " + userAccount.getUsername());
                         }
