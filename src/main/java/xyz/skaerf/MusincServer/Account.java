@@ -143,8 +143,23 @@ public class Account {
      * @return the user URI of the Spotify account
      */
     public URI createSpotifyUser() {
-        this.spotify = new SpotifyUser(this);
+        this.spotify = new SpotifyUser(this, true);
         return this.spotify.getUserURI();
+    }
+
+    /**
+     * Creates a new instance of SpotifyUser if one does not exist that is
+     * linked to this Account, otherwise it will refresh the preexisting one.
+     * Used to refresh access upon a request being denied or when a client
+     * reconnects and transmits a refresh token.
+     * @param refreshToken the token to be used to refresh access
+     * @return true if successful, otherwise false
+     */
+    public boolean refreshSpotifyAccess(String refreshToken) {
+        if (this.spotify == null) {
+            this.spotify = new SpotifyUser(this, false);
+        }
+        return this.spotify.refreshPastAccess(refreshToken);
     }
 
     /**

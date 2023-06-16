@@ -4,6 +4,7 @@ public class RequestArgs {
 
     public static String CREATE_ACCOUNT = "cre;";
     public static String CREATE_SPOTIFY_ACCOUNT = "creSpo;";
+    public static String REAUTHENTICATE_SPOTIFY_ACCOUNT = "reaSpo;";
     public static String CREATE_DEEZER_ACCOUNT = "creDee;";
     public static String LOG_IN = "log;";
     public static String KEEPALIVE = "kea;";

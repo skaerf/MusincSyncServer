@@ -4,7 +4,9 @@ import org.apache.hc.core5.http.ParseException;
 import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.SpotifyHttpManager;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
+import se.michaelthelin.spotify.model_objects.credentials.AuthorizationCodeCredentials;
 import se.michaelthelin.spotify.model_objects.credentials.ClientCredentials;
+import se.michaelthelin.spotify.requests.authorization.authorization_code.AuthorizationCodeRefreshRequest;
 import xyz.skaerf.MusincServer.ErrorHandler;
 
 import java.io.IOException;
@@ -45,9 +47,34 @@ public class Spotify {
     }
 
     /**
+     * Instantiates a new client user under the server's API link. Difference this has from
+     * instantiateClientUser() is that this is designed to refresh a previous connection
+     * using a refresh token, provided by a client.
+     * @param refreshToken the refresh token to be used for the refresh
+     */
+    public static SpotifyApi instantiatePreviousAccess(String refreshToken) {
+        SpotifyApi conn = new SpotifyApi.Builder()
+                .setClientId(clientID)
+                .setClientSecret(clientSecret)
+                .setRedirectUri(redirectUri)
+                .setRefreshToken(refreshToken)
+                .build();
+        try {
+            AuthorizationCodeCredentials authCodeCred = conn.authorizationCodeRefresh().build().execute();
+            conn.setAccessToken(authCodeCred.getAccessToken());
+            System.out.println("Spotify account credentials for user were refreshed");
+            return conn;
+        }
+        catch (IOException | ParseException | SpotifyWebApiException e) {
+            ErrorHandler.warn("Could not refresh Spotify user credentials", e.getStackTrace());
+        }
+        return null;
+    }
+
+    /**
      * Requests the credentials from Spotify for server's API connection
      */
-    public static void requestClientCredentials() {
+    private static void requestClientCredentials() {
         try {
             final ClientCredentials credentials = api.clientCredentials().build().execute();
             accessToken = credentials.getAccessToken();

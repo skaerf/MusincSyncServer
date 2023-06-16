@@ -213,14 +213,20 @@ public class ClientHandler implements Runnable {
                         if (userAccount.getSpotifyUser().confirm(data[0])) {
                             String alCov = userAccount.getSpotifyUser().getCurrentAlbumCover();
                             if (alCov != null) {
-                                this.buffWriter.println(RequestArgs.ACCEPTED+alCov);
+                                this.buffWriter.println(RequestArgs.ACCEPTED+userAccount.getSpotifyUser().getRefreshToken()+":!:"+alCov);
                             }
                             else {
-                                this.buffWriter.println(RequestArgs.DENIED);
+                                this.buffWriter.println(RequestArgs.ACCEPTED+userAccount.getSpotifyUser().getRefreshToken());
                             }
                         }
                         else {
                             this.buffWriter.println(RequestArgs.DENIED);
+                        }
+                    }
+                    if (arg.equalsIgnoreCase(RequestArgs.REAUTHENTICATE_SPOTIFY_ACCOUNT)) {
+                        String token = msgFromClient.split(";")[1];
+                        if (userAccount.refreshSpotifyAccess(token)) {
+                            this.buffWriter.println(RequestArgs.ACCEPTED);
                         }
                     }
                     if (arg.equalsIgnoreCase(RequestArgs.UPDATE_PLAYING)) {

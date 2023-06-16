@@ -25,10 +25,10 @@ import java.util.concurrent.TimeUnit;
 
 public class SpotifyUser {
 
-    private String authCode;
+    private String accessToken;
     private SpotifyApi clientAPI;
     private final Account account;
-    private final URI userURI;
+    private URI userURI;
 
     private String currentID;
     private long progressMS;
@@ -37,9 +37,31 @@ public class SpotifyUser {
     /**
     Instantiates a new SpotifyUser for a user - allows a Spotify account to be connected
      */
-    public SpotifyUser(Account account) {
-        userURI = Spotify.requestURI();
+    public SpotifyUser(Account account, boolean isNew) {
+        if (isNew) this.userURI = Spotify.requestURI();
         this.account = account;
+    }
+
+    /**
+     * Used to refresh previous Spotify API access using a refresh token.
+     * @param refreshToken the token to use to grab a new access token
+     * @return true if succeeded, otherwise false
+     */
+    public boolean refreshPastAccess(String refreshToken) {
+        this.clientAPI = Spotify.instantiatePreviousAccess(refreshToken);
+        if (this.clientAPI != null) {
+            this.userURI = this.clientAPI.getRedirectURI();
+            this.accessToken = this.clientAPI.getAccessToken();
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @return Spotify user's refresh token
+     */
+    public String getRefreshToken() {
+        return clientAPI.getRefreshToken();
     }
 
     /**
@@ -47,8 +69,8 @@ public class SpotifyUser {
     the server's Spotify login.
      @return boolean of the result of the client authentication tokens being set for use
      */
-    public boolean confirm(String authCode) {
-        this.authCode = authCode;
+    public boolean confirm(String accessToken) {
+        this.accessToken = accessToken;
         clientAPI = Spotify.instantiateClientUser();
         return setAuthTokens();
     }
@@ -67,7 +89,7 @@ public class SpotifyUser {
     private boolean setAuthTokens() {
         final AuthorizationCodeCredentials authorizationCodeCredentials;
         try {
-            authorizationCodeCredentials = clientAPI.authorizationCode(authCode).build().execute();
+            authorizationCodeCredentials = clientAPI.authorizationCode(accessToken).build().execute();
             clientAPI.setAccessToken(authorizationCodeCredentials.getAccessToken());
             clientAPI.setRefreshToken(authorizationCodeCredentials.getRefreshToken());
             System.out.println("Client API for "+clientAPI.getCurrentUsersProfile().build().execute().getDisplayName()+" expires in: " + authorizationCodeCredentials.getExpiresIn());
@@ -144,8 +166,11 @@ public class SpotifyUser {
                 return track;
             }
         }
-        catch (IOException | SpotifyWebApiException | ParseException | NullPointerException e) {
+        catch (IOException | SpotifyWebApiException | ParseException e) {
             ErrorHandler.warn("Could not get user's currently playing song", e.getStackTrace());
+            return null;
+        }
+        catch (NullPointerException e) {
             return null;
         }
         catch (InterruptedException e) {
