@@ -33,6 +33,7 @@ public class SpotifyUser {
     private String currentID;
     private long progressMS;
     private long timeOfCall;
+    private boolean isPaused;
 
     /**
     Instantiates a new SpotifyUser for a user - allows a Spotify account to be connected
@@ -48,13 +49,16 @@ public class SpotifyUser {
      * @return true if succeeded, otherwise false
      */
     public boolean refreshPastAccess(String refreshToken) {
-        this.clientAPI = Spotify.instantiatePreviousAccess(refreshToken);
-        if (this.clientAPI != null) {
+        SpotifyApi newAPI = Spotify.instantiatePreviousAccess(refreshToken);
+        if (newAPI != null) {
+            this.clientAPI = newAPI;
             this.userURI = this.clientAPI.getRedirectURI();
             this.accessToken = this.clientAPI.getAccessToken();
             return true;
         }
-        return false;
+        else {
+            return false;
+        }
     }
 
     /**
@@ -103,13 +107,17 @@ public class SpotifyUser {
 
     /**
     Used to pause the playback of the user's Spotify account. Throws an error to ErrorHandler if it is unable to do so.
+     @return true if successful, otherwise false
      */
-    public void pausePlayback() {
+    public boolean pausePlayback() {
         try {
             clientAPI.pauseUsersPlayback().build().execute();
+            isPaused = true;
+            return true;
         }
         catch (IOException | SpotifyWebApiException | ParseException e) {
             ErrorHandler.warn("Could not pause user playback", e.getStackTrace());
+            return false;
         }
     }
 
@@ -120,7 +128,12 @@ public class SpotifyUser {
     public Track getCurrentlyPlaying() {
         if (currentID != null && System.currentTimeMillis() - Long.parseLong(currentID.split(":")[0]) >= 10000) {
             try {
-                return clientAPI.getTrack(currentID.split(":")[1]).build().execute();
+                Track track = clientAPI.getTrack(currentID.split(":")[1]).build().execute();
+                if (track != null) {
+                    Spotify.initialiseAPILink();
+                    track = clientAPI.getTrack(currentID.split(":")[1]).build().execute();
+                    return track;
+                }
             }
             catch (IOException | SpotifyWebApiException | ParseException e) {
                 ErrorHandler.warn("Could not get track", e.getStackTrace());
@@ -128,7 +141,7 @@ public class SpotifyUser {
         }
         try {
             CurrentlyPlaying curPlay = clientAPI.getUsersCurrentlyPlayingTrack().additionalTypes("track,episode").build().execute();
-            if (curPlay.getCurrentlyPlayingType() != null) {
+            if (curPlay.getIs_playing()) {
                 Track track = clientAPI.getTrack(curPlay.getItem().getId()).build().execute();
                 if (track == null) {
                     try {
@@ -139,30 +152,23 @@ public class SpotifyUser {
                         ErrorHandler.warn("Could not pause to wait for user's track to start playing", e.getStackTrace());
                     }
                 }
-                assert track != null;
-                this.currentID = System.currentTimeMillis()+":"+track.getId();
-                this.timeOfCall = curPlay.getTimestamp();
-                this.progressMS = curPlay.getProgress_ms();
-                return track;
+                else {
+                    this.currentID = System.currentTimeMillis() + ":" + track.getId();
+                    this.timeOfCall = curPlay.getTimestamp();
+                    this.progressMS = curPlay.getProgress_ms();
+                    return track;
+                }
             }
             else {
                 TimeUnit.SECONDS.sleep(5);
                 curPlay = clientAPI.getUsersCurrentlyPlayingTrack().additionalTypes("track,episode").build().execute();
+                if (curPlay == null || !curPlay.getIs_playing()) return null;
                 Track track = clientAPI.getTrack(curPlay.getItem().getId()).build().execute();
-
-                if (track == null) {
-                    try {
-                        TimeUnit.MILLISECONDS.sleep(50);
-                        track = clientAPI.getTrack(curPlay.getItem().getId()).build().execute();
-                    }
-                    catch (InterruptedException e) {
-                        ErrorHandler.warn("Could not pause to wait for user's track to start playing", e.getStackTrace());
-                    }
-                }
-                assert track != null;
+                if (track == null) return null;
                 this.currentID = System.currentTimeMillis()+":"+track.getId();
                 this.timeOfCall = curPlay.getTimestamp();
                 this.progressMS = curPlay.getProgress_ms();
+                this.isPaused = !curPlay.getIs_playing();
                 return track;
             }
         }
@@ -214,6 +220,8 @@ public class SpotifyUser {
                 return (String) image0.get("url");
             } catch (IOException | InterruptedException e) {
                 System.out.println("Could not send request to Spotify for album cover");
+                // TODO add the refresh token from the client in UPDATE_PLAYING requests and pass it to this function. if it can reconnect, run again, otherwise return null
+                return null;
             } catch (org.json.simple.parser.ParseException e) {
                 System.out.println("Could not parse Spotify's response as JSON");
             }
@@ -224,13 +232,21 @@ public class SpotifyUser {
     /**
     Resumes the Spotify user's playback if it was paused.
     Throws error to ErrorHandler if unable to resume.
+     @return true if successful, otherwise false
      */
-    public void resumePlayback() {
+    public boolean resumePlayback() {
         try {
             clientAPI.startResumeUsersPlayback().build().execute();
+            isPaused = false;
+            return true;
         } catch (IOException | SpotifyWebApiException | ParseException e) {
             ErrorHandler.warn("Could not start or resume user's playback", e.getStackTrace());
+            return false;
         }
+    }
+
+    public boolean isPaused() {
+        return this.isPaused;
     }
 
     /**

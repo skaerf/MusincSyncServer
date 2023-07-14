@@ -1,6 +1,8 @@
 package xyz.skaerf.MusincServer;
 
+import org.junit.runner.Request;
 import se.michaelthelin.spotify.model_objects.specification.Track;
+import xyz.skaerf.MusincServer.APIs.Spotify;
 
 import java.io.*;
 import java.net.Socket;
@@ -15,6 +17,7 @@ public class ClientHandler implements Runnable {
     public BufferedReader buffReader;
     public PrintWriter buffWriter;
     private Account userAccount;
+    private int userID = 0;
 
     /**
     Instantiates a new ClientHandler with the socket that was created for it.
@@ -59,10 +62,9 @@ public class ClientHandler implements Runnable {
                         this.buffWriter.println(RequestArgs.DENIED);
                         this.closeConnection();
                     }
-                    int userid = 0;
                     try {
                         if (keepaliveTable != null) while (keepaliveTable.next()) {
-                            userid = keepaliveTable.getInt("userid");
+                            userID = keepaliveTable.getInt("userid");
                         }
                     }
                     catch (SQLException e) {
@@ -70,7 +72,7 @@ public class ClientHandler implements Runnable {
                         this.buffWriter.println(RequestArgs.DENIED);
                         this.closeConnection();
                     }
-                    ResultSet users = MySQLInterface.executeStatement("select username from users where userid = '" + userid + "'");
+                    ResultSet users = MySQLInterface.executeStatement("select username from users where userid = '" + userID + "'");
                     String username = "";
                     try {
                         if (users != null) while (users.next()) {
@@ -145,18 +147,17 @@ public class ClientHandler implements Runnable {
      */
     private String generateKeepalive() {
         ResultSet userIDs = MySQLInterface.executeStatement("select userid from users where username = '"+userAccount.getUsername()+"'");
-        int userid = 0;
         String keepalive = System.currentTimeMillis()+":"+PassManager.generateSalt()+":"+PassManager.getPassHash(this.socket.getRemoteSocketAddress().toString().replace(".", "").split(":")[0]);
         try {
             if (userIDs != null) while (userIDs.next()) {
-                userid = userIDs.getInt("userid");
+                userID = userIDs.getInt("userid");
             }
         }
         catch (SQLException e) {
             ErrorHandler.warn("Could not iterate through user IDs provided whilst attempting to save keepalive", e.getStackTrace());
         }
 
-        MySQLInterface.executeUpdate("insert into keepalives (userid, keepalive) values ("+userid+", '"+keepalive+"')");
+        MySQLInterface.executeUpdate("insert into keepalives (userid, keepalive) values ("+userID+", '"+keepalive+"')");
         return keepalive;
     }
 
@@ -211,9 +212,11 @@ public class ClientHandler implements Runnable {
                             this.closeConnection();
                         }
                         if (userAccount.getSpotifyUser().confirm(data[0])) {
+                            userAccount.getSpotifyUser();
+                            Track currentlyPlaying = userAccount.getSpotifyUser().getCurrentlyPlaying();
                             String alCov = userAccount.getSpotifyUser().getCurrentAlbumCover();
                             if (alCov != null) {
-                                this.buffWriter.println(RequestArgs.ACCEPTED+userAccount.getSpotifyUser().getRefreshToken()+":!:"+alCov);
+                                this.buffWriter.println(RequestArgs.ACCEPTED+userAccount.getSpotifyUser().getRefreshToken()+":!:"+alCov+":!:"+currentlyPlaying.getName()+":!:"+currentlyPlaying.getArtists()[0]+":!:"+userAccount.getSpotifyUser().getSongProgress());
                             }
                             else {
                                 this.buffWriter.println(RequestArgs.ACCEPTED+userAccount.getSpotifyUser().getRefreshToken());
@@ -224,26 +227,74 @@ public class ClientHandler implements Runnable {
                         }
                     }
                     if (arg.equalsIgnoreCase(RequestArgs.REAUTHENTICATE_SPOTIFY_ACCOUNT)) {
+                        ResultSet sqlResponse;
+                        if (userID == 0) {
+                            sqlResponse = MySQLInterface.executeStatement("select userid from users where username = '"+userAccount.getUsername()+"'");
+                            if (sqlResponse != null) while (sqlResponse.next()) {
+                                userID = sqlResponse.getInt("userid");
+                            }
+                        }
+                        sqlResponse = MySQLInterface.executeStatement("select spotify from connections where userid = "+userID);
+                        String refreshToken = "";
+                        if (sqlResponse != null) while (sqlResponse.next()) {
+                            refreshToken = sqlResponse.getString("spotify");
+                        }
+                        else {
+                            this.buffWriter.println(RequestArgs.DENIED);
+                        }
+                        if (!refreshToken.equalsIgnoreCase("")) {
+                            userAccount.refreshSpotifyAccess(refreshToken);
+                        }
+                        // OLD
                         String token = msgFromClient.split(";")[1];
                         if (userAccount.refreshSpotifyAccess(token)) {
                             this.buffWriter.println(RequestArgs.ACCEPTED);
                         }
                     }
                     if (arg.equalsIgnoreCase(RequestArgs.UPDATE_PLAYING)) {
-                        try {
-                            Track currentTrack = userAccount.getSpotifyUser().getCurrentlyPlaying();
+                        Track currentTrack = userAccount.getSpotifyUser().getCurrentlyPlaying();
+                        long timestamp;
+                        String trackName;
+                        String artist;
+                        if (currentTrack != null) {
+                            timestamp = userAccount.getSpotifyUser().getSongProgress();
+                            trackName = currentTrack.getName();
+                            artist = currentTrack.getArtists()[0].getName();
                             String albumCover = userAccount.getSpotifyUser().getCurrentAlbumCover();
-                            long timestamp = userAccount.getSpotifyUser().getSongProgress();
-                            String trackName = currentTrack.getName();
-                            String artist = currentTrack.getArtists()[0].getName();
-                            if (albumCover == null) {
-                                this.buffWriter.println(RequestArgs.DENIED+"couldNotGrab");
+                            this.buffWriter.println(RequestArgs.ACCEPTED + albumCover + ":!:" + trackName + ":!:" + artist + ":!:" + timestamp);
+                        }
+                        else {
+                            userAccount.refreshSpotifyAccess(userAccount.getSpotifyUser().getRefreshToken());
+                            currentTrack = userAccount.getSpotifyUser().getCurrentlyPlaying();
+                            if (currentTrack == null) {
+                                this.buffWriter.println(RequestArgs.DENIED);
                             }
                             else {
+                                timestamp = userAccount.getSpotifyUser().getSongProgress();
+                                trackName = currentTrack.getName();
+                                artist = currentTrack.getArtists()[0].getName();
+                                String albumCover = userAccount.getSpotifyUser().getCurrentAlbumCover();
                                 this.buffWriter.println(RequestArgs.ACCEPTED + albumCover + ":!:" + trackName + ":!:" + artist + ":!:" + timestamp);
                             }
                         }
-                        catch (NullPointerException ignored) {}
+                    }
+                    if (arg.equalsIgnoreCase(RequestArgs.PLAY_PAUSE)) {
+                        if (userAccount.getSpotifyUser().isPaused()) {
+                            if (userAccount.getSpotifyUser().resumePlayback()) {
+                                this.buffWriter.println(RequestArgs.ACCEPTED);
+                            }
+                            else {
+                                this.buffWriter.println(RequestArgs.DENIED);
+                            }
+                        }
+                        else {
+                            if (userAccount.getSpotifyUser().pausePlayback()) {
+                                this.buffWriter.println(RequestArgs.ACCEPTED);
+                            }
+                            else {
+                                this.buffWriter.println(RequestArgs.DENIED);
+                            }
+                        }
                     }
                 }
             }
@@ -256,6 +307,9 @@ public class ClientHandler implements Runnable {
                 }
                 this.closeConnection();
                 break;
+            }
+            catch (SQLException e) {
+                ErrorHandler.warn("Could not iterate through provided SQL data", e.getStackTrace());
             }
         }
     }
