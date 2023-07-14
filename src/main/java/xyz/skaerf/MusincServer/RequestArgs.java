@@ -13,4 +13,5 @@ public class RequestArgs {
     public static String NOT_ENOUGH_ARGS = "den;missingArgs";
     public static String GENERAL = "gen;";
     public static String UPDATE_PLAYING = "updAlb;";
+    public static String PLAY_PAUSE = "plp;";
 }
