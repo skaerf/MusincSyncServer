@@ -23,7 +23,7 @@ public class Deezer {
 
     /**
      * Gets the Deezer access code for a user to be added
-     * @return a HashMap<String, String> containing the access token data of the Deezer user
+     * @return type HashMap of string to string containing the access token data of the Deezer user
      */
     public static HashMap<String, String> getAccessCode() {
         try {

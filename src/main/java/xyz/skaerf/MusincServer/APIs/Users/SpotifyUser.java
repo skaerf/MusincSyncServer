@@ -33,10 +33,14 @@ public class SpotifyUser {
     private String currentID;
     private long progressMS;
     private long timeOfCall;
+    private long curTrackLength;
     private boolean isPaused;
 
     /**
-    Instantiates a new SpotifyUser for a user - allows a Spotify account to be connected
+     * Instantiates a new SpotifyUser for a user - allows a Spotify account to be connected
+     * @param account the account for which the SpotifyUser will be instantiated
+     * @param isNew determines whether the account is a refresh of a previous instantiation
+     *              or if it is a new creation without a refresh token
      */
     public SpotifyUser(Account account, boolean isNew) {
         if (isNew) this.userURI = Spotify.requestURI();
@@ -62,6 +66,7 @@ public class SpotifyUser {
     }
 
     /**
+     * Get the refresh token of the SpotifyUser.
      * @return Spotify user's refresh token
      */
     public String getRefreshToken() {
@@ -69,9 +74,10 @@ public class SpotifyUser {
     }
 
     /**
-    Used to confirm the authentication code for a Spotify user. This allows the actual client user to be instantiated by
-    the server's Spotify login.
-     @return boolean of the result of the client authentication tokens being set for use
+     * Used to confirm the authentication code for a Spotify user. This allows the actual client user to be instantiated by
+     * the server's Spotify login.
+     * @param accessToken the access token to be confirmed
+     * @return boolean of the result of the client authentication tokens being set for use
      */
     public boolean confirm(String accessToken) {
         this.accessToken = accessToken;
@@ -80,15 +86,16 @@ public class SpotifyUser {
     }
 
     /**
-    @return the user's Spotify account URI
+     * Gets the Spotify user's URI. Used for generating links used for authorisation.
+     * @return the user's Spotify account URI
      */
     public URI getUserURI() {
         return this.userURI;
     }
 
     /**
-    Used internally by the class to set the authentication tokens from the user based on the class' authCode variable.
-    @return True if succeeded to grab auth tokens, false if not
+     * Used internally by the class to set the authentication tokens from the user based on the class' authCode variable.
+     * @return True if succeeded to grab auth tokens, false if not
      */
     private boolean setAuthTokens() {
         final AuthorizationCodeCredentials authorizationCodeCredentials;
@@ -106,8 +113,8 @@ public class SpotifyUser {
     }
 
     /**
-    Used to pause the playback of the user's Spotify account. Throws an error to ErrorHandler if it is unable to do so.
-     @return true if successful, otherwise false
+     * Used to pause the playback of the user's Spotify account. Throws an error to ErrorHandler if it is unable to do so.
+     * @return true if successful, otherwise false
      */
     public boolean pausePlayback() {
         try {
@@ -122,15 +129,15 @@ public class SpotifyUser {
     }
 
     /**
-    Gets the user's currently playing Spotify song. Rate limited to once every ten seconds to prevent throttling on Spotify's end.
-    @return a Track variable of the user's currently playing song.
+     * Gets the user's currently playing Spotify song. Rate limited to once every 1.5 seconds to prevent spamming Spotify.
+     * If a second requests is made within two seconds of the first, the same results will be returned.
+     * @return a Track variable of the user's currently playing song.
      */
     public Track getCurrentlyPlaying() {
-        if (currentID != null && System.currentTimeMillis() - Long.parseLong(currentID.split(":")[0]) >= 10000) {
+        if (currentID != null && System.currentTimeMillis() - Long.parseLong(currentID.split(":")[0]) <= 1500) {
             try {
                 Track track = clientAPI.getTrack(currentID.split(":")[1]).build().execute();
                 if (track != null) {
-                    Spotify.initialiseAPILink();
                     track = clientAPI.getTrack(currentID.split(":")[1]).build().execute();
                     return track;
                 }
@@ -147,6 +154,12 @@ public class SpotifyUser {
                     try {
                         TimeUnit.MILLISECONDS.sleep(50);
                         track = clientAPI.getTrack(curPlay.getItem().getId()).build().execute();
+                        this.currentID = System.currentTimeMillis()+":"+track.getId();
+                        this.timeOfCall = curPlay.getTimestamp();
+                        this.progressMS = curPlay.getProgress_ms();
+                        this.isPaused = !curPlay.getIs_playing();
+                        this.curTrackLength = track.getDurationMs();
+                        return track;
                     }
                     catch (InterruptedException e) {
                         ErrorHandler.warn("Could not pause to wait for user's track to start playing", e.getStackTrace());
@@ -156,6 +169,8 @@ public class SpotifyUser {
                     this.currentID = System.currentTimeMillis() + ":" + track.getId();
                     this.timeOfCall = curPlay.getTimestamp();
                     this.progressMS = curPlay.getProgress_ms();
+                    this.isPaused = !curPlay.getIs_playing();
+                    this.curTrackLength = track.getDurationMs();
                     return track;
                 }
             }
@@ -169,6 +184,7 @@ public class SpotifyUser {
                 this.timeOfCall = curPlay.getTimestamp();
                 this.progressMS = curPlay.getProgress_ms();
                 this.isPaused = !curPlay.getIs_playing();
+                this.curTrackLength = track.getDurationMs();
                 return track;
             }
         }
@@ -197,15 +213,24 @@ public class SpotifyUser {
     }
 
     /**
-    getCurrentlyPlaying() MUST be called first. This is purely for rate limiting reasons - ends up being way too many requests
-    otherwise and results in program being inoperable.
-    @return the URL (in form of a String) for the user's currently playing song's album cover. Used for display on client.
+     * Returns the length of the most recently requested playing track in milliseconds.
+     * @return current track length in ms
+     */
+    public long getCurrentTrackLength() {
+        return this.curTrackLength;
+    }
+
+    /**
+     * Gets the album cover as a URL (returned as a String) for the user's currently playing song.
+     * getCurrentlyPlaying() MUST be called first. This is purely for rate limiting reasons - ends up being way too many requests
+     * otherwise and results in program being inoperable.
+     * @return the URL (in form of a String) for the user's currently playing song's album cover. Used for display on client.
      */
     public String getCurrentAlbumCover() {
         // the single reason this does not conform to everything else is because the API I am using does not allow me to grab album covers
         HttpClient client = HttpClient.newHttpClient();
-        if (this.getCurrentlyPlaying() != null) {
-            String currID = this.getCurrentlyPlaying().getId();
+        if (this.currentID != null) {
+            String currID = this.currentID.split(":")[1];
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("https://api.spotify.com/v1/tracks/" + currID))
                     .header("Authorization", "Bearer " + Spotify.getAccessToken())
@@ -218,41 +243,79 @@ public class SpotifyUser {
                 JSONArray images = (JSONArray) album.get("images");
                 JSONObject image0 = (JSONObject) images.get(0);
                 return (String) image0.get("url");
-            } catch (IOException | InterruptedException e) {
-                System.out.println("Could not send request to Spotify for album cover");
+            }
+            catch (IOException | InterruptedException e) {
+                ErrorHandler.warn("Could not send request to Spotify for album cover", e.getStackTrace());
                 // TODO add the refresh token from the client in UPDATE_PLAYING requests and pass it to this function. if it can reconnect, run again, otherwise return null
                 return null;
-            } catch (org.json.simple.parser.ParseException e) {
-                System.out.println("Could not parse Spotify's response as JSON");
+            }
+            catch (org.json.simple.parser.ParseException e) {
+                ErrorHandler.warn("Could not parse Spotify's response as JSON", e.getStackTrace());
+                return null;
             }
         }
         return null;
     }
 
     /**
-    Resumes the Spotify user's playback if it was paused.
-    Throws error to ErrorHandler if unable to resume.
-     @return true if successful, otherwise false
+     * Skips the user's song to the next one.
+     * @return true if successful, otherwise false
+     */
+    public boolean nextTrack() {
+        try {
+            clientAPI.skipUsersPlaybackToNextTrack().build().execute();
+            return true;
+        }
+        catch (IOException | SpotifyWebApiException | ParseException e) {
+            ErrorHandler.warn("Could not skip user's track", e.getStackTrace());
+            return false;
+        }
+    }
+
+    /**
+     * Rewinds to the user's previously played track.
+     * @return true if successful, otherwise false
+     */
+    public boolean previousTrack() {
+        try {
+            clientAPI.skipUsersPlaybackToPreviousTrack().build().execute();
+            return true;
+        }
+        catch (IOException | SpotifyWebApiException | ParseException e) {
+            ErrorHandler.warn("Could not rewind to user's previous track", e.getStackTrace());
+            return false;
+        }
+    }
+
+    /**
+     * Resumes the Spotify user's playback if it was paused.
+     * Throws error to ErrorHandler if unable to resume.
+     * @return true if successful, otherwise false
      */
     public boolean resumePlayback() {
         try {
             clientAPI.startResumeUsersPlayback().build().execute();
             isPaused = false;
             return true;
-        } catch (IOException | SpotifyWebApiException | ParseException e) {
+        }
+        catch (IOException | SpotifyWebApiException | ParseException e) {
             ErrorHandler.warn("Could not start or resume user's playback", e.getStackTrace());
             return false;
         }
     }
 
+    /**
+     * Determines whether this Spotify user is currently playing music or not.
+     * @return true if is paused, otherwise false
+     */
     public boolean isPaused() {
         return this.isPaused;
     }
 
     /**
-    Creates a playlist on the user's behalf.
-    @return the playlist that is created, null if did not succeed.
-     @param playlistName the name for the playlist
+     * Creates a playlist on the user's behalf.
+     * @param playlistName the name for the playlist
+     * @return the playlist that is created, null if did not succeed.
      */
     public Playlist createPlaylist(String playlistName) {
         try {
@@ -271,10 +334,10 @@ public class SpotifyUser {
     }
 
     /**
-    Adds one or many songs to a given playlist via its Spotify ID.
-    Songs are received in a string list to allow simple iteration.
-     @param playlistID the Spotify ID of the playlist to be added to
-     @param uris String array of Spotify song URIs to be added to the given playlist
+     * Adds one or many songs to a given playlist via its Spotify ID.
+     * Songs are received in a string list to allow simple iteration.
+     * @param playlistID the Spotify ID of the playlist to be added to
+     * @param uris String array of Spotify song URIs to be added to the given playlist
      */
     public void addToPlaylist(String playlistID, String[] uris) {
         try {
@@ -286,8 +349,8 @@ public class SpotifyUser {
     }
 
     /**
-    Gets the playlists that the user has on their account.
-    @return Array of PlaylistSimplified to allow search, iteration etc.
+     * Gets the playlists that the user has on their account.
+     * @return Array of PlaylistSimplified to allow search, iteration etc.
      */
     public PlaylistSimplified[] getPlaylists() {
         try {

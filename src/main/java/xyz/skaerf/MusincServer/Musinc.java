@@ -9,15 +9,20 @@ import xyz.skaerf.MusincServer.HTTP.RootHandler;
 
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
-public class Main {
+public class Musinc {
 
     static HashMap<String, String> configValues = new HashMap<>();
+    /**
+     * List of ClientHandler instantiations to show clients actively connected to the server
+     */
     public static List<ClientHandler> activeClients = new ArrayList<>();
+    /**
+     * HashMap of strings and Sessions - the string is the ID of the session. Used mostly for active session lookup
+     * as well as to represent all active sessions on the server.
+     */
+    public static HashMap<String, Session> activeSessions = new HashMap<>();
     static File configFile;
     static String localIP;
     static String publicIP;
@@ -29,7 +34,7 @@ public class Main {
     static Object defaultAccount;
 
     /**
-     * Main method. Run when the jar is started
+     * Musinc main method. Run when the jar is started
      * @param args args provided by the JVM
      */
     public static void main(String[] args) {
@@ -84,6 +89,37 @@ public class Main {
         else {
             ErrorHandler.logDir = true;
         }
+    }
+
+    /**
+     * Generates a six-letter/number ID to be used as a Session identifier.
+     * Runs a check to see if the ID already exists - extremely low chance of
+     * this occurring but done just in case!
+     * @return the ID that was generated
+     */
+    public static String generateSessionID() {
+        StringBuilder res = new StringBuilder();
+        String letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+        Random rand = new Random();
+        for (int i = 0; i < 6; i++) {
+            res.append(letters.charAt(rand.nextInt(letters.length())));
+        }
+        while (activeSessions.containsKey(res.toString())) {
+            res = new StringBuilder();
+            for (int i = 0; i < 6; i++) {
+                res.append(letters.charAt(rand.nextInt(letters.length())));
+            }
+        }
+        return res.toString();
+    }
+
+    /**
+     * Searches through the active sessions and returns the one requested via the ID.
+     * @param sessionID the ID of the Session that is being requested
+     * @return the Session, null if it doesn't exist
+     */
+    public static Session getActiveSession(String sessionID) {
+        return activeSessions.get(sessionID);
     }
 
     /**

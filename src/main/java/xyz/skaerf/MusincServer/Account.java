@@ -56,7 +56,7 @@ public class Account {
         catch (SQLException e) {
             ErrorHandler.warn("Could not iterate through the SQl server's response for UserID request", e.getStackTrace());
         }
-        MySQLInterface.executeStatement("insert into passwords (userid, salt, hash) values ("+userID+","+salt+","+dHashed+")");
+        MySQLInterface.executeUpdate("insert into passwords (userid, salt, hash) values ('"+userID+"','"+salt+"','"+dHashed+"')");
     }
 
     /**
@@ -122,20 +122,37 @@ public class Account {
      */
     public void joinSession(Session session) {
         this.currentSession = session;
+        session.addUser(this);
     }
 
     /**
      * Removes the user from their current Session
      */
     public void leaveSession() {
-        this.currentSession.getClientUsers().remove(this);
+        this.currentSession.removeUser(this);
+        this.currentSession = null;
     }
 
     /**
      * Creates a new Session under the user's account, setting them as the host
+     * @return the Session that was created
      */
-    public void createSession() {
+    public Session createSession() {
         this.currentSession = new Session(this);
+        return this.currentSession;
+    }
+
+    /**
+     * Simpler way of returning if the current Account is the host of a Session.
+     * Pointless to be used anywhere other than Account#isSessionHost() as a direct reference;
+     * it is accessible from Session#getHostUser but obviously that is pointless
+     * @return true if user is host, otherwise false
+     */
+    public boolean isSessionHost() {
+        if (this.currentSession != null) {
+            return this.currentSession.getHostUser().equals(this);
+        }
+        return false;
     }
 
     /**
@@ -170,7 +187,7 @@ public class Account {
     }
 
     /**
-     * Gets the user's SpotifyUser
+     * Gets the user's SpotifyUser instance
      * @return SpotifyUser instance, null if none set
      */
     public SpotifyUser getSpotifyUser() {

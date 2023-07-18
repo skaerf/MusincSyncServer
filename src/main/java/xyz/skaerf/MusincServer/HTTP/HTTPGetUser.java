@@ -4,7 +4,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import xyz.skaerf.MusincServer.Account;
 import xyz.skaerf.MusincServer.AccountManager;
-import xyz.skaerf.MusincServer.Main;
+import xyz.skaerf.MusincServer.Musinc;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -37,7 +37,7 @@ public class HTTPGetUser implements HttpHandler {
         else {
             response = response + "\n\n\nRESULT:";
         }
-        Main.parseQuery(requestedUri.getRawQuery(), parameters);
+        Musinc.parseQuery(requestedUri.getRawQuery(), parameters);
         he.sendResponseHeaders(200, response.length());
         OutputStream outStream = he.getResponseBody();
         outStream.write(response.getBytes());

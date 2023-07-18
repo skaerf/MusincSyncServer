@@ -15,6 +15,12 @@ public class MySQLInterface {
      */
     public static void connectDatabase() {
         try {
+            if (connection != null && connection.isValid(50)) return;
+        }
+        catch (SQLException e) {
+            ErrorHandler.warn("Could not verify validity of database connection", e.getStackTrace());
+        }
+        try {
             connection = DriverManager.getConnection("jdbc:mysql://home.skaerf.xyz:2291/usrs", username, password);
             if (connection.isValid(50)) {
                 System.out.println("Successfully connected to database");

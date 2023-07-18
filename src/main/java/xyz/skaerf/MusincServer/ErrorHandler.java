@@ -36,7 +36,7 @@ public class ErrorHandler {
                 logDir = false;
             }
         }
-        Main.endProcess(0);
+        Musinc.endProcess(0);
     }
 
     /**

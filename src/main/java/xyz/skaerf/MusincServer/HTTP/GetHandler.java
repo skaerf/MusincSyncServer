@@ -2,7 +2,7 @@ package xyz.skaerf.MusincServer.HTTP;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
-import xyz.skaerf.MusincServer.Main;
+import xyz.skaerf.MusincServer.Musinc;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -29,7 +29,7 @@ public class GetHandler implements HttpHandler {
         }
         String response = "Request received\n\n\n"+ requestInfo;
         // TODO EXECUTE REQUESTS NOT RELATED TO ESSENTIALS
-        Main.parseQuery(requestedUri.getRawQuery(), parameters);
+        Musinc.parseQuery(requestedUri.getRawQuery(), parameters);
         he.sendResponseHeaders(200, response.length());
         OutputStream outStream = he.getResponseBody();
         outStream.write(response.getBytes());

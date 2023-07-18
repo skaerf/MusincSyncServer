@@ -6,7 +6,6 @@ import se.michaelthelin.spotify.SpotifyHttpManager;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 import se.michaelthelin.spotify.model_objects.credentials.AuthorizationCodeCredentials;
 import se.michaelthelin.spotify.model_objects.credentials.ClientCredentials;
-import se.michaelthelin.spotify.requests.authorization.authorization_code.AuthorizationCodeRefreshRequest;
 import xyz.skaerf.MusincServer.ErrorHandler;
 
 import java.io.IOException;
@@ -14,7 +13,7 @@ import java.net.URI;
 
 public class Spotify {
 
-    private static SpotifyApi api;
+    private static SpotifyApi api = null;
     private static final String clientID = "e31b70f90fe746a79c945f48a10b7dda";
     private static final String clientSecret = "d75a335cbe0d4e7fbc75ddb934c90eac";
     private static String accessToken = "";
@@ -24,6 +23,7 @@ public class Spotify {
      * Initialises the API link for the server's connection to Spotify.
      */
     public static void initialiseAPILink() {
+        if (api != null) return;
         api = new SpotifyApi.Builder()
                 .setClientId(clientID)
                 .setClientSecret(clientSecret)
@@ -51,6 +51,7 @@ public class Spotify {
      * instantiateClientUser() is that this is designed to refresh a previous connection
      * using a refresh token, provided by a client.
      * @param refreshToken the refresh token to be used for the refresh
+     * @return the instantiated client API
      */
     public static SpotifyApi instantiatePreviousAccess(String refreshToken) {
         SpotifyApi conn = new SpotifyApi.Builder()

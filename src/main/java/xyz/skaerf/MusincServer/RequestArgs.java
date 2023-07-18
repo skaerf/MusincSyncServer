@@ -3,6 +3,8 @@ package xyz.skaerf.MusincServer;
 public class RequestArgs {
 
     public static String CREATE_ACCOUNT = "cre;";
+    public static String CREATE_SESSION = "creSes;";
+    public static String JOIN_SESSION = "joiSes;";
     public static String CREATE_SPOTIFY_ACCOUNT = "creSpo;";
     public static String REAUTHENTICATE_SPOTIFY_ACCOUNT = "reaSpo;";
     public static String CREATE_DEEZER_ACCOUNT = "creDee;";
@@ -14,4 +16,6 @@ public class RequestArgs {
     public static String GENERAL = "gen;";
     public static String UPDATE_PLAYING = "updAlb;";
     public static String PLAY_PAUSE = "plp;";
+    public static String PREVIOUS_TRACK = "pre;";
+    public static String NEXT_TRACK = "nex;";
 }

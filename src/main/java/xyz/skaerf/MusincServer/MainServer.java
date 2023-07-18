@@ -31,7 +31,7 @@ public class MainServer {
      */
     private void startServer() {
         System.out.println("Socket server started successfully on port "+port);
-        System.out.println("Hosted from "+Main.country+" at "+Main.publicIP+":"+port);
+        System.out.println("Hosted from "+ Musinc.country+" at "+ Musinc.publicIP+":"+port);
         try {
             while (!serSoc.isClosed()) {
                 Socket socket = serSoc.accept();
