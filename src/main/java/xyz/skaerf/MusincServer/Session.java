@@ -69,7 +69,7 @@ public class Session {
      * Used to attempt to maintain track sync.
      */
     public void pauseAll() {
-        for (Account user : this.clientUsers) {
+        if (this.clientUsers != null) for (Account user : this.clientUsers) {
             user.getSpotifyUser().pausePlayback();
         }
     }
@@ -79,7 +79,7 @@ public class Session {
      * Used to attempt to maintain track sync.
      */
     public void resumeAll() {
-        for (Account user : this.clientUsers) {
+        if (this.clientUsers != null) for (Account user : this.clientUsers) {
             user.getSpotifyUser().resumePlayback();
         }
     }
