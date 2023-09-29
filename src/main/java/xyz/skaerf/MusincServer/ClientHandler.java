@@ -261,7 +261,7 @@ public class ClientHandler implements Runnable {
                     }
                     if (arg.equalsIgnoreCase(RequestArgs.UPDATE_PLAYING)) {
                         System.out.println("Received a request to update playing information from "+userAccount.getUsername());
-                        Track currentTrack = userAccount.getSpotifyUser().getCurrentlyPlaying();
+                        Track currentTrack = userAccount.getSpotifyUser().getCurrentlyPlaying(); // TODO THIS CAN BE NULL IF ACCOUNT HAS NOT BEEN CREATED AND AN UPDATE IS MANUALLY REQUESTED
                         System.out.println("yee 1");
                         long timestamp;
                         String trackName;
@@ -369,14 +369,19 @@ public class ClientHandler implements Runnable {
                             }
                             else {
                                 StringBuilder clients = new StringBuilder();
-                                for (Account user : session.getClientUsers()) {
-                                    clients.append(user.getUsername()).append(":!:");
+                                if (session.getClientUsers() != null) {
+                                    for (Account user : session.getClientUsers()) {
+                                        clients.append(user.getUsername()).append(":!:");
+                                    }
+                                    clients.deleteCharAt(clients.length());
+                                    clients.deleteCharAt(clients.length());
+                                    clients.deleteCharAt(clients.length());
+                                    this.buffWriter.println(RequestArgs.ACCEPTED+session.getHostUser()+":!:"+ clients);
                                 }
-                                clients.deleteCharAt(clients.length());
-                                clients.deleteCharAt(clients.length());
-                                clients.deleteCharAt(clients.length());
+                                else {
+                                    this.buffWriter.println(RequestArgs.ACCEPTED+session.getHostUser().getUsername());
+                                }
                                 userAccount.joinSession(session);
-                                this.buffWriter.println(RequestArgs.ACCEPTED+session.getHostUser()+":!:"+ clients);
                             }
                         }
                     }

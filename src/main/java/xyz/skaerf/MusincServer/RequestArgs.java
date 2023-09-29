@@ -18,4 +18,5 @@ public class RequestArgs {
     public static String PLAY_PAUSE = "plp;";
     public static String PREVIOUS_TRACK = "pre;";
     public static String NEXT_TRACK = "nex;";
+    public static String CREATE_PREMIERE = "crePre;";
 }

@@ -42,7 +42,7 @@ public class MySQLInterface {
     public static ResultSet executeStatement(String sqlString) {
         ResultSet resSet;
         try {
-            if (connection.isValid(50)) {
+            if (connection != null && connection.isValid(50)) {
                 Statement statement = connection.createStatement();
                 resSet = statement.executeQuery(sqlString);
                 return resSet;

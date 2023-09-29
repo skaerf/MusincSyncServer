@@ -139,6 +139,8 @@ public class Account {
      */
     public Session createSession() {
         this.currentSession = new Session(this);
+        Musinc.activeSessions.put(this.currentSession.getSessionID(), this.currentSession);
+        System.out.println("New Session was created with ID "+this.currentSession.getSessionID()+" for "+username);
         return this.currentSession;
     }
 

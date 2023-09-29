@@ -6,7 +6,7 @@ public class Session {
 
     private final Account hostUser;
     private final String sessionID;
-    private final ArrayList<Account> clientUsers;
+    private ArrayList<Account> clientUsers;
 
     /**
      * Instantiates a new Session.
@@ -58,6 +58,7 @@ public class Session {
      * @param account the account to be added
      */
     public void addUser(Account account) {
+        if (this.clientUsers == null) this.clientUsers = new ArrayList<>();
         this.clientUsers.add(account);
         for (Account user : this.clientUsers) {
             // TODO broadcast that a user has joined somehow??? maybe other thread in client when user is in session?

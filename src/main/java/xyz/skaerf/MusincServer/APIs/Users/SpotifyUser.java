@@ -263,7 +263,7 @@ public class SpotifyUser {
      */
     public boolean nextTrack() {
         try {
-            clientAPI.skipUsersPlaybackToNextTrack().build().execute();
+            clientAPI.skipUsersPlaybackToNextTrack().build().execute(); // TODO WHY DIDNT IT WORK I HATE MY PROJECT WHY DID I DO THIS TO MYSELF
             return true;
         }
         catch (IOException | SpotifyWebApiException | ParseException e) {
