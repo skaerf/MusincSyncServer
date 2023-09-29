@@ -28,7 +28,7 @@ test {
 jar {
     manifest {
         attributes(
-                'Main-Class': 'xyz.skaerf.MusincServer.Main',
+                'Main-Class': 'xyz.skaerf.MusincServer.Musinc',
                 'Class-Path': '/lib/mysql-connector-java-8.0.30.jar'
         )
     }
