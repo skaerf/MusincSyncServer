@@ -269,6 +269,7 @@ public class ClientHandler implements Runnable {
                         if (currentTrack != null) {
                             System.out.println("yee 2");
                             timestamp = userAccount.getSpotifyUser().getSongProgress();
+                            System.out.println(timestamp+" prg, len "+userAccount.getSpotifyUser().getCurrentTrackLength());
                             if (timestamp > userAccount.getSpotifyUser().getCurrentTrackLength()) {
                                 if (userAccount.refreshSpotifyAccess(userAccount.getSpotifyUser().getRefreshToken())) {
                                     currentTrack = userAccount.getSpotifyUser().getCurrentlyPlaying();
@@ -365,6 +366,10 @@ public class ClientHandler implements Runnable {
                             String sessionID = data[0];
                             Session session = Musinc.getActiveSession(sessionID);
                             if (session == null) {
+                                this.buffWriter.println(RequestArgs.DENIED);
+                            }
+                            else if (session.getHostUser().getUsername().equals(userAccount.getUsername())) {
+                                // deny if the user is the same as the host - should not be able to join their own session
                                 this.buffWriter.println(RequestArgs.DENIED);
                             }
                             else {

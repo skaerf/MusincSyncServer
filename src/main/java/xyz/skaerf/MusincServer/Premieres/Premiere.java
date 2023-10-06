@@ -2,6 +2,7 @@ package xyz.skaerf.MusincServer.Premieres;
 
 import xyz.skaerf.MusincServer.Account;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class Premiere {
@@ -15,5 +16,13 @@ public class Premiere {
         PremiereManager.premieres.add(this);
         System.out.println("New premiere created for "+this.host.getLastName()+", "+this.host.getFirstName());
         System.out.println("Starting at "+this.premiereTime.getHour()+":"+this.premiereTime.getMinute()+" UTC");
+    }
+
+    protected Account getHost() {
+        return this.host;
+    }
+
+    protected LocalDateTime getPremiereTime() {
+        return this.premiereTime;
     }
 }
