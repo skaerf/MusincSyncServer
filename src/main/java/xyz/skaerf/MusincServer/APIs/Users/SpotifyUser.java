@@ -361,4 +361,42 @@ public class SpotifyUser {
         return null;
     }
 
+    /**
+    Plays a provided song on the user's Spotify account.
+     It is only this disgusting because there is no way to directly play a song.
+     Breaks if there are any songs already in the user's queue (again, unavoidable)
+     @param track the Track to be played
+     @return false if unsuccessful, otherwise true
+     */
+    public boolean playSong(Track track) {
+        try {
+            clientAPI.addItemToUsersPlaybackQueue(track.getUri()).build().execute();
+        }
+        catch (IOException | ParseException | SpotifyWebApiException e) {
+            ErrorHandler.warn("Unable to add track to player's queue", e.getStackTrace());
+            return false;
+        }
+        return nextTrack();
+    }
+
+    /**
+     Plays a provided song on the user's Spotify account and seeks to a specific timestamp.
+     It is only this disgusting because there is no way to directly play a song.
+     Breaks if there are any songs already in the user's queue (again, unavoidable)
+     @param track the Track to be played
+     @param timestamp the timestamp to seek to
+     @return false if unsuccessful, otherwise true
+     */
+    public boolean playSong(Track track, long timestamp) {
+        if (!playSong(track)) return false;
+        try {
+            clientAPI.seekToPositionInCurrentlyPlayingTrack((int) timestamp).build().execute();
+            return true;
+        }
+        catch (IOException | ParseException | SpotifyWebApiException e) {
+            ErrorHandler.warn("Unable to seek to timestamp while playing a song", e.getStackTrace());
+            return false;
+        }
+    }
+
 }

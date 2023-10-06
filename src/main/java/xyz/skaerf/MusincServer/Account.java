@@ -123,6 +123,7 @@ public class Account {
     public void joinSession(Session session) {
         this.currentSession = session;
         session.addUser(this);
+        spotify.playSong(session.getHostUser().getSpotifyUser().getCurrentlyPlaying(), session.getHostUser().getSpotifyUser().getSongProgress());
     }
 
     /**
