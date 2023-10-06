@@ -208,8 +208,9 @@ public class SpotifyUser {
      * @return the progress in MS for the currently playing song
      */
     public long getSongProgress() {
+        System.out.println("timeOfCall - "+this.timeOfCall+"\nprogressMS - "+this.progressMS);
         long difference = System.currentTimeMillis()-this.timeOfCall;
-        return this.progressMS+difference;
+        return this.progressMS; //this.progressMS+difference;
     }
 
     /**

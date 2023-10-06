@@ -1,16 +1,17 @@
 package xyz.skaerf.MusincServer.Premieres;
 
 import xyz.skaerf.MusincServer.Account;
+import xyz.skaerf.MusincServer.Session;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-public class Premiere {
+public class Premiere extends Session {
 
     private Account host;
     private LocalDateTime premiereTime;
 
     public Premiere(Account host, LocalDateTime premiereTime) {
+        super(host);
         this.host = host;
         this.premiereTime = premiereTime;
         PremiereManager.premieres.add(this);
