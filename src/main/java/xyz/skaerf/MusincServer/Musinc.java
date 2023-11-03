@@ -2,13 +2,15 @@ package xyz.skaerf.MusincServer;
 
 import com.sun.net.httpserver.HttpServer;
 import xyz.skaerf.MusincServer.APIs.Spotify;
-import xyz.skaerf.MusincServer.HTTP.GetHandler;
+import xyz.skaerf.MusincServer.HTTP.JoinHandler;
 import xyz.skaerf.MusincServer.HTTP.HTTPCreateAccountHandler;
 import xyz.skaerf.MusincServer.HTTP.HTTPGetUser;
 import xyz.skaerf.MusincServer.HTTP.RootHandler;
+import xyz.skaerf.MusincServer.Premieres.Premiere;
 
 import java.io.*;
 import java.net.*;
+import java.time.LocalDateTime;
 import java.util.*;
 
 public class Musinc {
@@ -29,7 +31,8 @@ public class Musinc {
     static String country;
     static HttpServer httpServer;
     static MainServer server;
-    static int port;
+    static int socketServerPort;
+    static int premierePort;
     static File logFolder;
     static Object defaultAccount;
 
@@ -53,23 +56,18 @@ public class Musinc {
         //String[] uris = {"spotify:track:2IPKXJWPjC5AdDtOxTDkqA","spotify:track:45ewhNby8MgyWw6HmT7HKJ", "spotify:track:4ESWJepzBtY2lR9oZDYVaP"};
         //defaultAccount.getSpotifyUser().addToPlaylist(defaultAccount.getSpotifyUser().createPlaylist("hell yeah").getId(), uris);
         //defaultAccount.createDeezerUser();
+        String id = Musinc.generateSessionID();
+        System.out.println(id);
+        activeSessions.put(id, new Premiere((Account) defaultAccount, LocalDateTime.now().plusHours(2)));
 
-
-        port = Integer.parseInt(configValues.get("port"));
+        socketServerPort = Integer.parseInt(configValues.get("socketPort"));
+        premierePort = Integer.parseInt(configValues.get("premierePort"));
         if (configValues.get("webserver").equalsIgnoreCase("true")) {
-            System.out.println("Initialising web server");
-            initialiseServer(port);
+            System.out.println("Initialising web server. USED ONLY FOR PREMIERES. SOCKETSERVER WILL STILL BE INITIALISED.");
+            initialiseServer(premierePort);
         }
-        else if (configValues.get("webserver").equalsIgnoreCase("false")) {
-            System.out.println("Initialising server socket");
-            initialiseServerSocket(port);
-        }
-        else {
-            ErrorHandler.warn("webserver value in config is not valid or does not exist, defaulting to webserver:true");
-            configValues.put("webserver", "true");
-            System.out.println("Initialising web server");
-            initialiseServer(port);
-        }
+        System.out.println("Initialising server socket");
+        initialiseServerSocket(socketServerPort);
     }
 
     /**
@@ -130,7 +128,7 @@ public class Musinc {
             try {
                 if (configFile.createNewFile()) {
                     System.out.println("Config file successfully created");
-                    System.out.println("Please enter a port into the config file and restart the program");
+                    System.out.println("Please enter the ports into the config file and restart the program");
                     System.exit(0);
                 }
             }
@@ -159,7 +157,7 @@ public class Musinc {
 
     /**
      * Initialises the web server.
-     * Mostly disused as the main client connections will not function without a SocketServer being instantiated.
+     * Used only for the Premiere system - can no longer be used as a REST API.
      * @param port the port that the web server is to be started on
      */
     public static void initialiseServer(int port) {
@@ -167,7 +165,7 @@ public class Musinc {
             httpServer = HttpServer.create(new InetSocketAddress(port), 0);
             System.out.println("Web server started successfully on port "+port);
             httpServer.createContext("/", new RootHandler());
-            httpServer.createContext("/get", new GetHandler());
+            httpServer.createContext("/join", new JoinHandler());
             httpServer.createContext("/createaccount", new HTTPCreateAccountHandler());
             httpServer.createContext("/getuser", new HTTPGetUser());
             httpServer.setExecutor(null);
@@ -231,7 +229,7 @@ public class Musinc {
 
     /**
      * Parses a query for the web server.
-     * Mostly disused as the web server itself is not used for much in the program
+     * Mostly disused as web server is only used for the Premiere system
      * as the client programs cannot function without SocketServer running.
      * @param query the query to be parsed
      * @param parameters any parameters that come with the query

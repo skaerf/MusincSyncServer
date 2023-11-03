@@ -1,2 +1,3 @@
-port:1905
-webserver:false
+socketPort:1905
+premierePort:1906
+webserver:true

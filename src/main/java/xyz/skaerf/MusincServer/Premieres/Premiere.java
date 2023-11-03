@@ -23,7 +23,7 @@ public class Premiere extends Session {
         return this.host;
     }
 
-    protected LocalDateTime getPremiereTime() {
+    public LocalDateTime getPremiereTime() {
         return this.premiereTime;
     }
 }
