@@ -17,13 +17,15 @@ public class RootHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange he) throws IOException {
         System.out.println("Root request received from "+he.getRemoteAddress()+" for "+he.getRequestURI());
-        InputStream in = this.getClass().getClassLoader().getResourceAsStream("index.html");
-        if (in != null) {
-            String s = new BufferedReader(new InputStreamReader(in)).lines().collect(Collectors.joining("\n"));
-            he.getResponseHeaders().set("Content-Type", "text/html");
-            he.sendResponseHeaders(200, s.length());
-            try (OutputStream outStream = he.getResponseBody()) {
-                outStream.write(s.getBytes());
+        File indexHtmlFile = new File("index.html");
+        if (indexHtmlFile.exists()) {
+            try (InputStream in = new FileInputStream(indexHtmlFile)) {
+                String s = new BufferedReader(new InputStreamReader(in)).lines().collect(Collectors.joining("\n"));
+                he.getResponseHeaders().set("Content-Type", "text/html");
+                he.sendResponseHeaders(200, s.length());
+                try (OutputStream outStream = he.getResponseBody()) {
+                    outStream.write(s.getBytes());
+                }
             }
         }
         else {
