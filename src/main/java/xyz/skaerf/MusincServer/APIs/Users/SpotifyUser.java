@@ -380,6 +380,24 @@ public class SpotifyUser {
     }
 
     /**
+     * This function exists as an alternative to playSong. Used primarily for premieres -
+     * means that the server can add a song to all user's queues and then skip them.
+     * Uses time more efficiently and means that the players will be better in sync.
+     * @param track the Track to be added to the queue
+     * @return false if unsuccessful, otherwise true
+     */
+    public boolean queueSong(Track track) {
+        try {
+            clientAPI.addItemToUsersPlaybackQueue(track.getUri()).build().execute();
+        }
+        catch (IOException | ParseException | SpotifyWebApiException e) {
+            ErrorHandler.warn("Unable to add track to player's queue", e.getStackTrace());
+            return false;
+        }
+        return true;
+    }
+
+    /**
      Plays a provided song on the user's Spotify account and seeks to a specific timestamp.
      It is only this disgusting because there is no way to directly play a song.
      Breaks if there are any songs already in the user's queue (again, unavoidable)
