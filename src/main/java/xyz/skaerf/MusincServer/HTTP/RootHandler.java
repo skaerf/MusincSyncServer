@@ -17,13 +17,22 @@ public class RootHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange he) throws IOException {
         System.out.println("Root request received from "+he.getRemoteAddress()+" for "+he.getRequestURI());
-        StringBuilder response = new StringBuilder("<h1>MusincSyncServer</h1>\n");
-        he.sendResponseHeaders(200, response.length());
-        OutputStream outStream = he.getResponseBody();
         InputStream in = this.getClass().getClassLoader().getResourceAsStream("index.html");
-        assert in != null;
-        String s = new BufferedReader(new InputStreamReader(in)).lines().collect(Collectors.joining("\n"));
-        outStream.write(s.getBytes());
-        outStream.close();
+        if (in != null) {
+            String s = new BufferedReader(new InputStreamReader(in)).lines().collect(Collectors.joining("\n"));
+            he.getResponseHeaders().set("Content-Type", "text/html");
+            he.sendResponseHeaders(200, s.length());
+            try (OutputStream outStream = he.getResponseBody()) {
+                outStream.write(s.getBytes());
+            }
+        }
+        else {
+            // If index.html is not found, return a 404 error
+            String response = "File not found";
+            he.sendResponseHeaders(404, response.length());
+            try (OutputStream outStream = he.getResponseBody()) {
+                outStream.write(response.getBytes());
+            }
+        }
+        }
     }
-}
