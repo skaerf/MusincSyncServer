@@ -314,7 +314,7 @@ public class ClientHandler implements Runnable {
                                 if (userAccount.isSessionHost()) {
                                     userAccount.getSession().resumeAll();
                                 }
-                                this.buffWriter.println(RequestArgs.ACCEPTED);
+                                this.buffWriter.println(RequestArgs.ACCEPTED+"playing");
                             }
                             else {
                                 this.buffWriter.println(RequestArgs.DENIED);
@@ -325,7 +325,7 @@ public class ClientHandler implements Runnable {
                                 if (userAccount.isSessionHost()) {
                                     userAccount.getSession().pauseAll();
                                 }
-                                this.buffWriter.println(RequestArgs.ACCEPTED);
+                                this.buffWriter.println(RequestArgs.ACCEPTED+"paused");
                             }
                             else {
                                 this.buffWriter.println(RequestArgs.DENIED);
