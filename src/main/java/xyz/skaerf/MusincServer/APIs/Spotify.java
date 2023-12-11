@@ -6,6 +6,7 @@ import se.michaelthelin.spotify.SpotifyHttpManager;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 import se.michaelthelin.spotify.model_objects.credentials.AuthorizationCodeCredentials;
 import se.michaelthelin.spotify.model_objects.credentials.ClientCredentials;
+import se.michaelthelin.spotify.model_objects.specification.Track;
 import xyz.skaerf.MusincServer.ErrorHandler;
 
 import java.io.IOException;
@@ -84,6 +85,21 @@ public class Spotify {
         }
         catch (IOException | ParseException | SpotifyWebApiException e) {
             ErrorHandler.fatal("Could not request client credentials", e.getStackTrace());
+        }
+    }
+
+    /**
+     * Get a track from Spotify by its ID.
+     * @param id the track to grab
+     * @return the requested Track
+     */
+    public static Track getTrackById(String id) {
+        try {
+            return api.getTrack(id).build().execute();
+        }
+        catch (IOException | ParseException | SpotifyWebApiException e) {
+            ErrorHandler.warn("Unable to get track by ID from Spotify");
+            return null;
         }
     }
 

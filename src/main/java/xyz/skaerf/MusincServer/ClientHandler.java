@@ -1,12 +1,16 @@
 package xyz.skaerf.MusincServer;
 
+import org.apache.hc.core5.http.nio.command.RequestExecutionCommand;
+import se.michaelthelin.spotify.model_objects.IPlaylistItem;
 import se.michaelthelin.spotify.model_objects.specification.Track;
+import xyz.skaerf.MusincServer.APIs.Spotify;
 
 import java.io.*;
 import java.net.Socket;
 import java.net.URI;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.regex.PatternSyntaxException;
 
 public class ClientHandler implements Runnable {
@@ -285,6 +289,7 @@ public class ClientHandler implements Runnable {
                             artist = currentTrack.getArtists()[0].getName();
                             String albumCover = userAccount.getSpotifyUser().getCurrentAlbumCover();
                             System.out.println("yee 2.5");
+                            System.out.println(userAccount.getSpotifyUser().getQueue().getQueue().get(0));
                             this.buffWriter.println(RequestArgs.ACCEPTED + albumCover + ":!:" + trackName + ":!:" + artist + ":!:" + formattedTimestamp);
                         }
                         else {
@@ -389,6 +394,23 @@ public class ClientHandler implements Runnable {
                                 userAccount.joinSession(session);
                             }
                         }
+                    }
+                    if (arg.equalsIgnoreCase(RequestArgs.GET_QUEUE)) {
+                        List<IPlaylistItem> queue = userAccount.getSpotifyUser().getQueue().getQueue();
+                        StringBuilder sb = new StringBuilder();
+                        for (int i = 0; i < 2; i++) {
+                            Track track = Spotify.getTrackById(queue.get(i).getId());
+                            if (track == null) {
+                                this.buffWriter.println(RequestArgs.DENIED);
+                                break;
+                            }
+                            else {
+                                sb.append("(").append(track.getName()).append(":!:").append(track.getArtists()[0].getName()).append("):!:");
+                            }
+                        }
+                        sb.delete(sb.length()-3, sb.length());
+                        System.out.println(sb);
+                        this.buffWriter.println(RequestArgs.ACCEPTED + sb);
                     }
                 }
             }
