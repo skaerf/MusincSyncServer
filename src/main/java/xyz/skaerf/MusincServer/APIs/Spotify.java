@@ -107,7 +107,7 @@ public class Spotify {
      * @return the request URI for the server
      */
     public static URI requestURI() {
-        return api.authorizationCodeUri().scope("user-read-currently-playing,playlist-modify-public,playlist-modify-private,user-read-playback-position,user-library-read,user-modify-playback-state,").build().execute();
+        return api.authorizationCodeUri().scope("user-read-currently-playing,playlist-modify-public,playlist-modify-private,user-read-playback-position,user-library-read,user-modify-playback-state,user-read-playback-state").build().execute();
     }
 
     /**
