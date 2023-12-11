@@ -8,6 +8,7 @@ import se.michaelthelin.spotify.SpotifyApi;
 import se.michaelthelin.spotify.exceptions.SpotifyWebApiException;
 import se.michaelthelin.spotify.model_objects.credentials.AuthorizationCodeCredentials;
 import se.michaelthelin.spotify.model_objects.miscellaneous.CurrentlyPlaying;
+import se.michaelthelin.spotify.model_objects.special.PlaybackQueue;
 import se.michaelthelin.spotify.model_objects.specification.Playlist;
 import se.michaelthelin.spotify.model_objects.specification.PlaylistSimplified;
 import se.michaelthelin.spotify.model_objects.specification.Track;
@@ -238,7 +239,7 @@ public class SpotifyUser {
                 HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
                 JSONParser parser = new JSONParser();
                 JSONObject jsonResponse = (JSONObject) parser.parse(response.body());
-                JSONObject album = (JSONObject) jsonResponse.get("album");
+                JSONObject album = (JSONObject) jsonResponse.get("album"); // TODO occasionally will return null, why? usually fixed with a restart
                 JSONArray images = (JSONArray) album.get("images");
                 JSONObject image0 = (JSONObject) images.get(0);
                 return (String) image0.get("url");
@@ -391,10 +392,25 @@ public class SpotifyUser {
             clientAPI.addItemToUsersPlaybackQueue(track.getUri()).build().execute();
         }
         catch (IOException | ParseException | SpotifyWebApiException e) {
-            ErrorHandler.warn("Unable to add track to player's queue", e.getStackTrace());
+            ErrorHandler.warn("Unable to add track to user's queue", e.getStackTrace());
             return false;
         }
         return true;
+    }
+
+    /**
+     * Gets the current queue for the user. Used to render a list of upcoming songs on the client side.
+     * @return PlaybackQueue of songs
+     */
+    public PlaybackQueue getQueue() {
+        try {
+            return clientAPI.getTheUsersQueue().build().execute();
+        }
+        catch (IOException | ParseException | SpotifyWebApiException e) {
+            ErrorHandler.warn("Unable to get the user's song queue", e.getStackTrace());
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**
