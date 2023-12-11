@@ -4,7 +4,10 @@ import se.michaelthelin.spotify.model_objects.IPlaylistItem;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 import xyz.skaerf.MusincServer.APIs.Spotify;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URI;
 import java.sql.ResultSet;
@@ -256,6 +259,10 @@ public class ClientHandler implements Runnable {
                         if (!refreshToken.equalsIgnoreCase("")) {
                             userAccount.refreshSpotifyAccess(refreshToken);
                         }
+                        String token = msgFromClient.split(";")[1];
+                        if (userAccount.refreshSpotifyAccess(token)) {
+                            this.buffWriter.println(RequestArgs.ACCEPTED);
+                        }
                     }
                     if (arg.equalsIgnoreCase(RequestArgs.UPDATE_PLAYING)) {
                         System.out.println("Received a request to update playing information from "+userAccount.getUsername());
@@ -399,7 +406,7 @@ public class ClientHandler implements Runnable {
                                 break;
                             }
                             else {
-                                sb.append("(").append(track.getName()).append(":!:").append(track.getArtists()[0].getName()).append("):!:");
+                                sb.append("{").append(track.getName()).append(";;;").append(track.getArtists()[0].getName()).append("}:!:");
                             }
                         }
                         sb.delete(sb.length()-3, sb.length());

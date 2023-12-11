@@ -2,9 +2,9 @@ package xyz.skaerf.MusincServer;
 
 import com.sun.net.httpserver.HttpServer;
 import xyz.skaerf.MusincServer.APIs.Spotify;
-import xyz.skaerf.MusincServer.HTTP.JoinHandler;
 import xyz.skaerf.MusincServer.HTTP.HTTPCreateAccountHandler;
 import xyz.skaerf.MusincServer.HTTP.HTTPGetUser;
+import xyz.skaerf.MusincServer.HTTP.JoinHandler;
 import xyz.skaerf.MusincServer.HTTP.RootHandler;
 import xyz.skaerf.MusincServer.Premieres.Premiere;
 
