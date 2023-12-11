@@ -399,7 +399,7 @@ public class ClientHandler implements Runnable {
                     if (arg.equalsIgnoreCase(RequestArgs.GET_QUEUE)) {
                         List<IPlaylistItem> queue = userAccount.getSpotifyUser().getQueue().getQueue();
                         StringBuilder sb = new StringBuilder();
-                        for (int i = 0; i < 2; i++) {
+                        for (int i = 0; i < 5; i++) {
                             Track track = Spotify.getTrackById(queue.get(i).getId());
                             if (track == null) {
                                 this.buffWriter.println(RequestArgs.DENIED);
