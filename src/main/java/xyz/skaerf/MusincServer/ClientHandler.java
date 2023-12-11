@@ -1,6 +1,5 @@
 package xyz.skaerf.MusincServer;
 
-import org.apache.hc.core5.http.nio.command.RequestExecutionCommand;
 import se.michaelthelin.spotify.model_objects.IPlaylistItem;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 import xyz.skaerf.MusincServer.APIs.Spotify;
@@ -256,11 +255,6 @@ public class ClientHandler implements Runnable {
                         }
                         if (!refreshToken.equalsIgnoreCase("")) {
                             userAccount.refreshSpotifyAccess(refreshToken);
-                        }
-                        // OLD
-                        String token = msgFromClient.split(";")[1];
-                        if (userAccount.refreshSpotifyAccess(token)) {
-                            this.buffWriter.println(RequestArgs.ACCEPTED);
                         }
                     }
                     if (arg.equalsIgnoreCase(RequestArgs.UPDATE_PLAYING)) {
