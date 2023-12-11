@@ -406,7 +406,7 @@ public class ClientHandler implements Runnable {
                                 break;
                             }
                             else {
-                                sb.append("{").append(track.getName()).append(";;;").append(track.getArtists()[0].getName()).append("}:!:");
+                                sb.append("{").append(track.getName()).append("+++").append(track.getArtists()[0].getName()).append("}:!:");
                             }
                         }
                         sb.delete(sb.length()-3, sb.length());
