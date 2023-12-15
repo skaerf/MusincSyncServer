@@ -3,6 +3,7 @@ package xyz.skaerf.MusincServer;
 import se.michaelthelin.spotify.model_objects.IPlaylistItem;
 import se.michaelthelin.spotify.model_objects.specification.Track;
 import xyz.skaerf.MusincServer.APIs.Spotify;
+import xyz.skaerf.MusincServer.APIs.Users.SpotifyUser;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -265,52 +266,54 @@ public class ClientHandler implements Runnable {
                         }
                     }
                     if (arg.equalsIgnoreCase(RequestArgs.UPDATE_PLAYING)) {
-                        System.out.println("Received a request to update playing information from "+userAccount.getUsername());
-                        Track currentTrack = userAccount.getSpotifyUser().getCurrentlyPlaying(); // TODO THIS CAN BE NULL IF ACCOUNT HAS NOT BEEN CREATED AND AN UPDATE IS MANUALLY REQUESTED
-                        System.out.println("yee 1");
-                        long timestamp;
-                        String trackName;
-                        String artist;
-                        if (currentTrack != null) {
-                            System.out.println("yee 2");
-                            timestamp = userAccount.getSpotifyUser().getSongProgress();
-                            System.out.println(timestamp+" prg, len "+userAccount.getSpotifyUser().getCurrentTrackLength());
-                            if (timestamp > userAccount.getSpotifyUser().getCurrentTrackLength()) {
-                                if (userAccount.refreshSpotifyAccess(userAccount.getSpotifyUser().getRefreshToken())) {
-                                    currentTrack = userAccount.getSpotifyUser().getCurrentlyPlaying();
-                                    timestamp = userAccount.getSpotifyUser().getSongProgress();
-                                }
-                                else {
-                                    ErrorHandler.warn("Attempted to refresh user account credentials when the timestamp was longer than the length, but failed");
-                                    this.buffWriter.println(RequestArgs.DENIED);
-                                }
-                            }
-                            String formattedTimestamp = timestamp+"/"+userAccount.getSpotifyUser().getCurrentTrackLength();
-                            trackName = currentTrack.getName();
-                            artist = currentTrack.getArtists()[0].getName();
-                            String albumCover = userAccount.getSpotifyUser().getCurrentAlbumCover();
-                            System.out.println("yee 2.5");
-                            //System.out.println(userAccount.getSpotifyUser().getQueue().getQueue().get(0));
-                            this.buffWriter.println(RequestArgs.ACCEPTED + albumCover + ":!:" + trackName + ":!:" + artist + ":!:" + formattedTimestamp);
+                        System.out.println("Received a request to update playing information from " + userAccount.getUsername());
+                        if (userAccount.getSpotifyUser() == null) {
+                            this.buffWriter.println(RequestArgs.DENIED);
                         }
                         else {
-                            System.out.println("yee 3");
-                            userAccount.refreshSpotifyAccess(userAccount.getSpotifyUser().getRefreshToken());
-                            System.out.println("yee 4");
-                            currentTrack = userAccount.getSpotifyUser().getCurrentlyPlaying();
-                            System.out.println("yee 5");
-                            if (currentTrack == null) {
-                                System.out.println("yee 6");
-                                this.buffWriter.println(RequestArgs.DENIED);
-                            }
-                            else {
+                            Track currentTrack = userAccount.getSpotifyUser().getCurrentlyPlaying();
+                            System.out.println("yee 1");
+                            long timestamp;
+                            String trackName;
+                            String artist;
+                            if (currentTrack != null) {
+                                System.out.println("yee 2");
                                 timestamp = userAccount.getSpotifyUser().getSongProgress();
+                                System.out.println(timestamp + " prg, len " + userAccount.getSpotifyUser().getCurrentTrackLength());
+                                if (timestamp > userAccount.getSpotifyUser().getCurrentTrackLength()) {
+                                    if (userAccount.refreshSpotifyAccess(userAccount.getSpotifyUser().getRefreshToken())) {
+                                        currentTrack = userAccount.getSpotifyUser().getCurrentlyPlaying();
+                                        timestamp = userAccount.getSpotifyUser().getSongProgress();
+                                    } else {
+                                        ErrorHandler.warn("Attempted to refresh user account credentials when the timestamp was longer than the length, but failed");
+                                        this.buffWriter.println(RequestArgs.DENIED);
+                                    }
+                                }
+                                String formattedTimestamp = timestamp + "/" + userAccount.getSpotifyUser().getCurrentTrackLength();
                                 trackName = currentTrack.getName();
                                 artist = currentTrack.getArtists()[0].getName();
-                                System.out.println("yee 7");
                                 String albumCover = userAccount.getSpotifyUser().getCurrentAlbumCover();
-                                System.out.println("yee 8");
-                                this.buffWriter.println(RequestArgs.ACCEPTED + albumCover + ":!:" + trackName + ":!:" + artist + ":!:" + timestamp+"/"+userAccount.getSpotifyUser().getCurrentTrackLength());
+                                System.out.println("yee 2.5");
+                                //System.out.println(userAccount.getSpotifyUser().getQueue().getQueue().get(0));
+                                this.buffWriter.println(RequestArgs.ACCEPTED + albumCover + ":!:" + trackName + ":!:" + artist + ":!:" + formattedTimestamp);
+                            } else {
+                                System.out.println("yee 3");
+                                userAccount.refreshSpotifyAccess(userAccount.getSpotifyUser().getRefreshToken());
+                                System.out.println("yee 4");
+                                currentTrack = userAccount.getSpotifyUser().getCurrentlyPlaying();
+                                System.out.println("yee 5");
+                                if (currentTrack == null) {
+                                    System.out.println("yee 6");
+                                    this.buffWriter.println(RequestArgs.DENIED);
+                                } else {
+                                    timestamp = userAccount.getSpotifyUser().getSongProgress();
+                                    trackName = currentTrack.getName();
+                                    artist = currentTrack.getArtists()[0].getName();
+                                    System.out.println("yee 7");
+                                    String albumCover = userAccount.getSpotifyUser().getCurrentAlbumCover();
+                                    System.out.println("yee 8");
+                                    this.buffWriter.println(RequestArgs.ACCEPTED + albumCover + ":!:" + trackName + ":!:" + artist + ":!:" + timestamp + "/" + userAccount.getSpotifyUser().getCurrentTrackLength());
+                                }
                             }
                         }
                     }
@@ -413,6 +416,38 @@ public class ClientHandler implements Runnable {
                         System.out.println(sb);
                         this.buffWriter.println(RequestArgs.ACCEPTED + sb);
                     }
+                    if (arg.equalsIgnoreCase(RequestArgs.GET_SESSION_QUEUE_UPDATE_PLAYING)) {
+                        if (userAccount.getSession() == null) {
+                            this.buffWriter.println(RequestArgs.DENIED);
+                        }
+                        else {
+                            SpotifyUser hostUser = userAccount.getSession().getHostUser().getSpotifyUser();
+                            Track curPlay = hostUser.getCurrentlyPlaying();
+                            long prg = hostUser.getSongProgress();
+                            String alCov = hostUser.getCurrentAlbumCover();
+                            List<IPlaylistItem> queue = hostUser.getQueue().getQueue();
+                            StringBuilder sb = new StringBuilder();
+                            for (int i = 0; i < 5; i++) {
+                                Track track = Spotify.getTrackById(queue.get(i).getId());
+                                if (track == null) {
+                                    this.buffWriter.println(RequestArgs.DENIED);
+                                    break;
+                                }
+                                else {
+                                    userAccount.getSpotifyUser().queueSong(track);
+                                    sb.append("{").append(track.getName()).append("+++").append(track.getArtists()[0].getName()).append("}:!:");
+                                }
+                            }
+                            sb.delete(sb.length() - 3, sb.length());
+                            String formattedTimestamp = prg + "/" + hostUser.getCurrentTrackLength();
+                            if (!userAccount.getSpotifyUser().playSong(curPlay, prg)) {
+                                this.buffWriter.println(RequestArgs.DENIED);
+                            }
+                            else {
+                                this.buffWriter.println(RequestArgs.ACCEPTED + alCov + ":!:" + curPlay.getName() + ":!:" + curPlay.getArtists()[0].getName() + ":!:" + formattedTimestamp + ":!:" + sb);
+                            }
+                        }
+                    }
                 }
             }
             catch (IOException e) {
@@ -429,14 +464,6 @@ public class ClientHandler implements Runnable {
                 ErrorHandler.warn("Could not iterate through provided SQL data", e.getStackTrace());
             }
         }
-    }
-
-    /**
-    Grabs the Account that is linked to this ClientHandler.
-    @return Account of active client
-     */
-    private Account getAccount() {
-        return this.userAccount;
     }
 
     /**

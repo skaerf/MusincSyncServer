@@ -20,4 +20,5 @@ public class RequestArgs {
     public static String NEXT_TRACK = "nex;";
     public static String CREATE_PREMIERE = "crePre;";
     public static String GET_QUEUE = "que;";
+    public static String GET_SESSION_QUEUE_UPDATE_PLAYING = "gsq;";
 }
