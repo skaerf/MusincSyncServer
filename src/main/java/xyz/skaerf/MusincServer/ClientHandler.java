@@ -424,6 +424,7 @@ public class ClientHandler implements Runnable {
                             SpotifyUser hostUser = userAccount.getSession().getHostUser().getSpotifyUser();
                             Track curPlay = hostUser.getCurrentlyPlaying();
                             long prg = hostUser.getSongProgress();
+                            userAccount.getSpotifyUser().playSong(curPlay, prg);
                             String alCov = hostUser.getCurrentAlbumCover();
                             List<IPlaylistItem> queue = hostUser.getQueue().getQueue();
                             StringBuilder sb = new StringBuilder();
