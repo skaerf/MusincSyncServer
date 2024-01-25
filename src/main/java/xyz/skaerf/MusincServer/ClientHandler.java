@@ -428,7 +428,7 @@ public class ClientHandler implements Runnable {
                             String alCov = hostUser.getCurrentAlbumCover();
                             List<IPlaylistItem> queue = hostUser.getQueue().getQueue();
                             StringBuilder sb = new StringBuilder();
-                            for (int i = 0; i < 5; i++) {
+                            for (int i = 0; i < 15; i++) {
                                 Track track = Spotify.getTrackById(queue.get(i).getId());
                                 if (track == null) {
                                     this.buffWriter.println(RequestArgs.DENIED);
