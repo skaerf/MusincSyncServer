@@ -24,8 +24,6 @@ public class ClientHandler implements Runnable {
     private Account userAccount;
     private int userID = 0;
 
-    private Thread sessionListenerThread;
-
     /**
     Instantiates a new ClientHandler with the socket that was created for it.
      Only used by MainServer to allow the server's main thread to create child
@@ -130,13 +128,14 @@ public class ClientHandler implements Runnable {
                     }
                 }
                 else if (arg.equalsIgnoreCase(RequestArgs.CREATE_ACCOUNT)) {
-                    if (data.length != 3) {
+                    if (data.length != 4) {
                         this.buffWriter.println(format(RequestArgs.NOT_ENOUGH_ARGS));
                         this.closeConnection();
                     }
                     Object verify = AccountManager.createNew(userAccount = new Account(data[0], data[1], data[2], data[3], null, null));
                     if (verify instanceof Account) {
                         this.buffWriter.println(format(RequestArgs.CREATE_ACCOUNT));
+                        System.out.println("Created an account under username "+data[0]);
                         userAccount = (Account) verify;
                     } else {
                         this.buffWriter.println(format(RequestArgs.DENIED + verify));
