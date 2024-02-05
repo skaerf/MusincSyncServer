@@ -36,15 +36,19 @@ public class AccountManager {
                 }
                 else {
                     ErrorHandler.warn("emailResult was null, this typically means SQL connection does not exist");
+                    return "error";
                 }
             }
             else {
                 ErrorHandler.warn("usernameResult was null, this typically means SQL connection does not exist");
+                return "error";
             }
         }
         catch (SQLException e) {
             ErrorHandler.warn("could not parse response from ResultSet upon requesting createNew account data", e.getStackTrace());
+            return "error";
         }
+        MySQLInterface.executeUpdate("insert into users (username, email, firstname, lastname) values ("+account.getUsername()+", "+account.getEmail()+", "+account.getFirstName()+", "+account.getLastName()+")");
         accountCache.add(account);
         return account;
     }
@@ -105,13 +109,5 @@ public class AccountManager {
             }
         }
         return null;
-    }
-
-    /**
-     * Removes the given account from the server's Account cache
-     * @param account account to be removed from the cache
-     */
-    public static void removeFromCache(Account account) {
-        accountCache.remove(account);
     }
 }
