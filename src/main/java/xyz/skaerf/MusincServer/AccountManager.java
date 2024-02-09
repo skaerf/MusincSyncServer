@@ -48,7 +48,7 @@ public class AccountManager {
             ErrorHandler.warn("could not parse response from ResultSet upon requesting createNew account data", e.getStackTrace());
             return "error";
         }
-        MySQLInterface.executeUpdate("insert into users (username, email, firstname, lastname) values ('"+account.getUsername()+"', '"+account.getEmail()+"', '"+account.getFirstName()+"', '"+account.getLastName()+"')");
+        if (!account.getUsername().equals("skaerf")) MySQLInterface.executeUpdate("insert into users (username, email, firstname, lastname) values ('"+account.getUsername()+"', '"+account.getEmail()+"', '"+account.getFirstName()+"', '"+account.getLastName()+"')");
         accountCache.add(account);
         return account;
     }
