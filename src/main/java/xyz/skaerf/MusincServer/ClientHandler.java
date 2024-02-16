@@ -427,24 +427,27 @@ public class ClientHandler implements Runnable {
                             String alCov = hostUser.getCurrentAlbumCover();
                             List<IPlaylistItem> queue = hostUser.getQueue().getQueue();
                             StringBuilder sb = new StringBuilder();
-                            for (int i = 0; i < 15; i++) {
+                            // TODO issues upon joining a session in relation to adding stuff to client's queue
+                            // may have fixed above issue by literally moving a chunk of code into the track==null bit rather than having it
+                            // deny after finding a null track (might have loaded the rest of the queue but not the last one because it wasn't
+                            // long enough)
+                            for (int i = 0; i < 5; i++) {
                                 Track track = Spotify.getTrackById(queue.get(i).getId());
                                 if (track == null) {
-                                    this.buffWriter.println(RequestArgs.DENIED);
+                                    sb.delete(sb.length() - 3, sb.length());
+                                    String formattedTimestamp = prg + "/" + hostUser.getCurrentTrackLength();
+                                    if (!userAccount.getSpotifyUser().playSong(curPlay, prg)) {
+                                        this.buffWriter.println(RequestArgs.DENIED);
+                                    }
+                                    else {
+                                        this.buffWriter.println(RequestArgs.ACCEPTED + alCov + ":!:" + curPlay.getName() + ":!:" + curPlay.getArtists()[0].getName() + ":!:" + formattedTimestamp + ":!:" + sb);
+                                    }
                                     break;
                                 }
                                 else {
                                     userAccount.getSpotifyUser().queueSong(track);
                                     sb.append("{").append(track.getName()).append("+++").append(track.getArtists()[0].getName()).append("}:!:");
                                 }
-                            }
-                            sb.delete(sb.length() - 3, sb.length());
-                            String formattedTimestamp = prg + "/" + hostUser.getCurrentTrackLength();
-                            if (!userAccount.getSpotifyUser().playSong(curPlay, prg)) {
-                                this.buffWriter.println(RequestArgs.DENIED);
-                            }
-                            else {
-                                this.buffWriter.println(RequestArgs.ACCEPTED + alCov + ":!:" + curPlay.getName() + ":!:" + curPlay.getArtists()[0].getName() + ":!:" + formattedTimestamp + ":!:" + sb);
                             }
                         }
                     }
