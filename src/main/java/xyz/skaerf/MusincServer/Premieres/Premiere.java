@@ -13,7 +13,7 @@ public class Premiere extends Session {
     private Track track = null;
     private boolean isStarted = false;
 
-    public Premiere(Account host, LocalDateTime premiereTime) { // add ability to play mp3 files etc
+    public Premiere(Account host, LocalDateTime premiereTime) {
         super(host);
         this.host = host;
         this.premiereTime = premiereTime;
