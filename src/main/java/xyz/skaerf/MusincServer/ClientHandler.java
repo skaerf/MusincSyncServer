@@ -401,8 +401,11 @@ public class ClientHandler implements Runnable {
                     if (arg.equalsIgnoreCase(RequestArgs.GET_QUEUE)) {
                         List<IPlaylistItem> queue = userAccount.getSpotifyUser().getQueue().getQueue();
                         StringBuilder sb = new StringBuilder();
+                        String last = queue.get(0).getId();
+                        int amt = 0;
                         for (int i = 0; i < 5; i++) {
                             Track track = Spotify.getTrackById(queue.get(i).getId());
+                            if (queue.get(i).getId().equals(last)) amt++;
                             if (track == null) {
                                 this.buffWriter.println(RequestArgs.DENIED);
                                 break;
@@ -413,7 +416,13 @@ public class ClientHandler implements Runnable {
                         }
                         sb.delete(sb.length()-3, sb.length());
                         System.out.println(sb);
-                        this.buffWriter.println(RequestArgs.ACCEPTED + sb);
+                        if (amt >= 5) {
+                            System.out.println("The song appears to have been repeated constantly in the queue. Declaring queue as null");
+                            this.buffWriter.println(RequestArgs.DENIED);
+                        }
+                        else {
+                            this.buffWriter.println(RequestArgs.ACCEPTED + sb);
+                        }
                     }
                     if (arg.equalsIgnoreCase(RequestArgs.GET_SESSION_QUEUE_UPDATE_PLAYING)) {
                         if (userAccount.getSession() == null) {
