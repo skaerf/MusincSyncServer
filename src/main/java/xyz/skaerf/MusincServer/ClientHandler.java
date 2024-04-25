@@ -128,15 +128,17 @@ public class ClientHandler implements Runnable {
                     }
                 }
                 else if (arg.equalsIgnoreCase(RequestArgs.CREATE_ACCOUNT)) {
-                    if (data.length != 4) {
+                    if (data.length != 5) {
                         this.buffWriter.println(format(RequestArgs.NOT_ENOUGH_ARGS));
                         this.closeConnection();
                     }
+                    String passString = data[4];
                     Object verify = AccountManager.createNew(userAccount = new Account(data[0], data[1], data[2], data[3], null, null));
                     if (verify instanceof Account) {
                         this.buffWriter.println(format(RequestArgs.CREATE_ACCOUNT));
                         System.out.println("Created an account under username "+data[0]);
                         userAccount = (Account) verify;
+                        userAccount.createPassword(passString);
                     } else {
                         this.buffWriter.println(format(RequestArgs.DENIED + verify));
                         this.closeConnection();
@@ -209,7 +211,7 @@ public class ClientHandler implements Runnable {
         while (socket.isConnected()) {
             try {
                 msgFromClient = this.buffReader.readLine();
-                if (msgFromClient != null && !msgFromClient.equals("")) {
+                if (msgFromClient != null && !msgFromClient.isEmpty()) {
                     String arg = msgFromClient.split(";")[0]+";";
                     String[] data = null;
                     if (!msgFromClient.equalsIgnoreCase(arg)) {

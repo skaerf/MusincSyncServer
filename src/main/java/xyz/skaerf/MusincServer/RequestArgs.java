@@ -21,4 +21,5 @@ public class RequestArgs {
     public static String CREATE_PREMIERE = "crePre;";
     public static String GET_QUEUE = "que;";
     public static String GET_SESSION_QUEUE_UPDATE_PLAYING = "gsq;";
+    public static String CREATE_PASSWORD = "crp;";
 }
