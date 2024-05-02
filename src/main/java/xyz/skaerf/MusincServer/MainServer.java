@@ -46,10 +46,12 @@ public class MainServer {
                 if (blacklist != null) {
                     BufferedReader br = new BufferedReader(blacklist);
                     String line;
+                    boolean blocked = false;
                     while ((line = br.readLine()) != null) if (line.equals(socket.getInetAddress().getHostAddress())) {
                         System.out.println("Piss off Russians");
-                        socket.close();
+                        blocked = true;
                     }
+                    if (blocked) continue;
                 }
                 ClientHandler clientHandler = new ClientHandler(socket);
                 Thread thread = new Thread(clientHandler);
