@@ -239,12 +239,12 @@ public class SpotifyUser {
                 HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
                 JSONParser parser = new JSONParser();
                 JSONObject jsonResponse = (JSONObject) parser.parse(response.body());
-                JSONObject album = (JSONObject) jsonResponse.get("album"); // TODO occasionally will return null, why? usually fixed with a restart
+                JSONObject album = (JSONObject) jsonResponse.get("album");
                 JSONArray images = (JSONArray) album.get("images");
                 JSONObject image0 = (JSONObject) images.get(0);
                 return (String) image0.get("url");
             }
-            catch (IOException | InterruptedException e) {
+            catch (IOException | InterruptedException | NullPointerException e) {
                 ErrorHandler.warn("Could not send request to Spotify for album cover", e.getStackTrace());
                 // TODO add the refresh token from the client in UPDATE_PLAYING requests and pass it to this function. if it can reconnect, run again, otherwise return null
                 return null;
@@ -408,7 +408,6 @@ public class SpotifyUser {
         }
         catch (IOException | ParseException | SpotifyWebApiException e) {
             ErrorHandler.warn("Unable to get the user's song queue", e.getStackTrace());
-            e.printStackTrace();
             return null;
         }
     }

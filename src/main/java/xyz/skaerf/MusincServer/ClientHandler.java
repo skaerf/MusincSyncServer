@@ -243,24 +243,6 @@ public class ClientHandler implements Runnable {
                         }
                     }
                     if (arg.equalsIgnoreCase(RequestArgs.REAUTHENTICATE_SPOTIFY_ACCOUNT)) {
-                        ResultSet sqlResponse;
-                        if (userID == 0) {
-                            sqlResponse = MySQLInterface.executeStatement("select userid from users where username = '"+userAccount.getUsername()+"'");
-                            if (sqlResponse != null) while (sqlResponse.next()) {
-                                userID = sqlResponse.getInt("userid");
-                            }
-                        }
-                        sqlResponse = MySQLInterface.executeStatement("select spotify from connections where userid = "+userID);
-                        String refreshToken = "";
-                        if (sqlResponse != null) while (sqlResponse.next()) {
-                            refreshToken = sqlResponse.getString("spotify");
-                        }
-                        else {
-                            this.buffWriter.println(RequestArgs.DENIED);
-                        }
-                        if (!refreshToken.equalsIgnoreCase("")) {
-                            userAccount.refreshSpotifyAccess(refreshToken);
-                        }
                         String token = msgFromClient.split(";")[1];
                         if (userAccount.refreshSpotifyAccess(token)) {
                             this.buffWriter.println(RequestArgs.ACCEPTED);
@@ -473,9 +455,6 @@ public class ClientHandler implements Runnable {
                 }
                 this.closeConnection();
                 break;
-            }
-            catch (SQLException e) {
-                ErrorHandler.warn("Could not iterate through provided SQL data", e.getStackTrace());
             }
         }
     }
