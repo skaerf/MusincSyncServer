@@ -154,6 +154,10 @@ public class ClientHandler implements Runnable {
             ErrorHandler.fatal("Could not instantiate client socket", e.getStackTrace());
             this.closeConnection();
         }
+        catch (NullPointerException e) {
+            ErrorHandler.warn("readLine was null, closing connection", e.getStackTrace());
+            this.closeConnection();
+        }
     }
 
     /**
